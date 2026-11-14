@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Threading.RateLimiting;
+using FiveStack.Api.Chat;
 using FiveStack.Api.Data;
 using FiveStack.Api.Meta;
 using Microsoft.AspNetCore.DataProtection;
@@ -54,7 +55,15 @@ builder.Services.AddRateLimiter(o =>
     o.AddPolicy("squads", ctx => RateLimitPartition.GetFixedWindowLimiter(
         ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anon",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromHours(1) }));
+    // Chat: per signed-in user. Starting DMs is the spam vector, so it's the tighter one.
+    o.AddPolicy("messages", ctx => RateLimitPartition.GetFixedWindowLimiter(
+        ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anon",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 30, Window = TimeSpan.FromMinutes(1) }));
+    o.AddPolicy("dm-start", ctx => RateLimitPartition.GetFixedWindowLimiter(
+        ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anon",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 30, Window = TimeSpan.FromHours(1) }));
 });
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -70,7 +79,7 @@ app.UseStaticFiles(); // Angular build is copied into wwwroot by the Dockerfile
 app.UseRateLimiter();
 
 // "Online now" heartbeat: stamp LastActiveAt at most once a minute per signed-in user.
-// ponytail: one PK update per authenticated API call; M5's SignalR presence can replace it.
+// ponytail: one PK update per authenticated API call. Kept next to hub presence: it feeds the "recently active" sort.
 app.Use(async (ctx, next) =>
 {
     if (ctx.Request.Path.StartsWithSegments("/api") && ctx.User.Identity?.IsAuthenticated == true
@@ -89,6 +98,7 @@ app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
 app.MapGet("/api/meta", () => GameData.All);
 app.MapGroup("/api/auth").MapIdentityApi<AppUser>().RequireRateLimiting("auth"); // login with ?useCookies=true
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat");
 app.MapFallbackToFile("index.html"); // client-side routes
 
 app.Run();

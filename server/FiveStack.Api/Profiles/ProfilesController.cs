@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using FiveStack.Api.Chat;
 using FiveStack.Api.Data;
 using FiveStack.Api.Meta;
 using Microsoft.AspNetCore.Authorization;
@@ -92,7 +93,7 @@ public class ProfilesController(UserManager<AppUser> users, SignInManager<AppUse
         return ToPublic(u);
     }
 
-    /// <summary>"Online now" = an authenticated API call within this window (LastActiveAt).</summary>
+    /// <summary>"Online now" = connected to the chat hub, or an authenticated API call within this window (LastActiveAt).</summary>
     public static readonly TimeSpan OnlineWindow = TimeSpan.FromMinutes(5);
 
     /// <summary>What anyone may see about a player. Discord only when the player opted in.</summary>
@@ -100,7 +101,7 @@ public class ProfilesController(UserManager<AppUser> users, SignInManager<AppUse
         u.Id, u.DisplayName, u.RiotName, u.RiotTag, u.Region, u.Servers, u.Platform, u.Rank, u.PeakRank, u.Roles,
         u.Agents, u.Languages, u.Mic, u.Modes, u.Playstyle, u.PlayTimes, u.Bio,
         u.ShowDiscord ? u.DiscordUsername : null,
-        u.LastActiveAt > DateTimeOffset.UtcNow - OnlineWindow);
+        Presence.IsOnline(u.Id) || u.LastActiveAt > DateTimeOffset.UtcNow - OnlineWindow);
 
     [Authorize]
     [HttpDelete("me")]

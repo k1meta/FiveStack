@@ -11,21 +11,6 @@ namespace FiveStack.Api.Tests;
 [Collection("api")]
 public class SquadTests(ApiFactory factory)
 {
-    private async Task<(HttpClient Client, string Id)> Player(string email, int rank = 14, bool onboard = true)
-    {
-        var client = factory.CreateClient();
-        var creds = new { email, password = "Passw0rd!" };
-        (await client.PostAsJsonAsync("/api/auth/register", creds)).EnsureSuccessStatusCode();
-        (await client.PostAsJsonAsync("/api/auth/login?useCookies=true", creds)).EnsureSuccessStatusCode();
-        if (onboard)
-        {
-            var profile = new { riotName = "Br" + rank, riotTag = "BR1", region = "br", rank, roles = new[] { "duelist" } };
-            (await client.PutAsJsonAsync("/api/me/profile", profile)).EnsureSuccessStatusCode();
-        }
-        var id = (await client.GetFromJsonAsync<JsonElement>("/api/auth/me")).GetProperty("id").GetString()!;
-        return (client, id);
-    }
-
     private static async Task<string> Post(HttpClient host, object squad)
     {
         var res = await host.PostAsJsonAsync("/api/squads", squad);
@@ -51,9 +36,9 @@ public class SquadTests(ApiFactory factory)
     [Fact]
     public async Task Board_filters_by_role_overlap_and_rank_fit_and_one_open_post_per_host()
     {
-        var (h1, _) = await Player("sq-h1@example.com");
-        var (h2, _) = await Player("sq-h2@example.com");
-        var (h3, _) = await Player("sq-h3@example.com");
+        var (h1, _) = await factory.Player("sq-h1@example.com");
+        var (h2, _) = await factory.Player("sq-h2@example.com");
+        var (h3, _) = await factory.Player("sq-h3@example.com");
         var smokes = await Post(h1, Squad("Need smokes", 10, 18, ["controller"]));
         var entry = await Post(h2, Squad("Need entry", 20, 26, ["duelist"]));
         var anyone = await Post(h3, Squad("Anyone", roles: []));
@@ -75,10 +60,10 @@ public class SquadTests(ApiFactory factory)
     [Fact]
     public async Task Accepting_takes_a_slot_and_a_full_squad_leaves_the_board()
     {
-        var (host, hostId) = await Player("sq-host@example.com");
-        var (a, aId) = await Player("sq-a@example.com");
-        var (b, bId) = await Player("sq-b@example.com");
-        var (newbie, _) = await Player("sq-new@example.com", onboard: false);
+        var (host, hostId) = await factory.Player("sq-host@example.com");
+        var (a, aId) = await factory.Player("sq-a@example.com");
+        var (b, bId) = await factory.Player("sq-b@example.com");
+        var (newbie, _) = await factory.Player("sq-new@example.com", onboard: false);
         var post = await Post(host, Squad("One slot", slots: 1));
 
         Assert.Equal(HttpStatusCode.Forbidden, (await newbie.PostAsync($"/api/squads/{post}/requests", null)).StatusCode);
@@ -110,8 +95,8 @@ public class SquadTests(ApiFactory factory)
     [Fact]
     public async Task Expired_post_is_off_the_board_and_not_joinable()
     {
-        var (host, _) = await Player("sq-exp-host@example.com");
-        var (joiner, _) = await Player("sq-exp-joiner@example.com");
+        var (host, _) = await factory.Player("sq-exp-host@example.com");
+        var (joiner, _) = await factory.Player("sq-exp-joiner@example.com");
         var post = await Post(host, Squad("Old news"));
 
         using (var scope = factory.Services.CreateScope())

@@ -1,3 +1,4 @@
+using FiveStack.Api.Chat;
 using FiveStack.Api.Squads;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -13,6 +14,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
     public DbSet<SquadPost> SquadPosts => Set<SquadPost>();
     public DbSet<JoinRequest> JoinRequests => Set<JoinRequest>();
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<ConversationMember> ConversationMembers => Set<ConversationMember>();
+    public DbSet<Message> Messages => Set<Message>();
+    public DbSet<Block> Blocks => Set<Block>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -33,5 +38,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.HasIndex(p => p.ExpiresAt);
         });
         b.Entity<JoinRequest>().HasKey(r => new { r.PostId, r.UserId });
+
+        b.Entity<Conversation>(e =>
+        {
+            // Optional FKs default to no-action; cascade so deleting a post (or its host's account) takes the chat along.
+            e.HasOne(c => c.SquadPost).WithOne().HasForeignKey<Conversation>(c => c.SquadPostId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(c => c.DmKey).IsUnique();
+        });
+        b.Entity<ConversationMember>(e =>
+        {
+            e.HasKey(m => new { m.ConversationId, m.UserId });
+            e.HasIndex(m => m.UserId);
+        });
+        b.Entity<Message>().HasIndex(m => new { m.ConversationId, m.Id });
+        b.Entity<Block>(e =>
+        {
+            e.HasKey(x => new { x.BlockerId, x.BlockedId });
+            e.HasOne(x => x.Blocker).WithMany().HasForeignKey(x => x.BlockerId);
+            e.HasOne(x => x.Blocked).WithMany().HasForeignKey(x => x.BlockedId);
+        });
     }
 }
