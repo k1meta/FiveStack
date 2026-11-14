@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace FiveStack.Api.Auth;
 
-public record MeDto(Guid Id, string? Email, string? DisplayName, string? DiscordUsername);
+public record MeDto(Guid Id, string? Email, string? DisplayName, string? DiscordUsername, bool Onboarded, IEnumerable<string> Logins);
 
 // Email/password endpoints (register, login, ...) come from MapIdentityApi in Program.cs.
 [ApiController]
@@ -22,7 +22,8 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
     {
         var u = await users.GetUserAsync(User);
         if (u is null) return Unauthorized();
-        return new MeDto(u.Id, u.Email, u.DisplayName, u.DiscordUsername);
+        var logins = (await users.GetLoginsAsync(u)).Select(l => l.LoginProvider);
+        return new MeDto(u.Id, u.Email, u.DisplayName, u.DiscordUsername, u.OnboardedAt is not null, logins);
     }
 
     [Authorize]
@@ -63,7 +64,11 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
         if (current is not null) return await Link(current, info, returnUrl);
 
         var result = await signIn.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: true);
-        if (result.Succeeded) return Redirect(returnUrl);
+        if (result.Succeeded)
+        {
+            var existing = await users.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+            return Redirect(existing?.OnboardedAt is null ? Onboarding(returnUrl) : returnUrl);
+        }
         if (result.IsLockedOut || result.IsNotAllowed) return Redirect("/login?error=not-allowed");
 
         var email = info.Principal.FindFirstValue(ClaimTypes.Email);
@@ -83,7 +88,7 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
 
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
         await signIn.SignInAsync(user, isPersistent: true, info.LoginProvider);
-        return Redirect(returnUrl);
+        return Redirect(Onboarding(returnUrl));
     }
 
     private async Task<IActionResult> Link(AppUser user, ExternalLoginInfo info, string returnUrl)
@@ -103,6 +108,9 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
         user.DiscordId = info.ProviderKey;
         user.DiscordUsername = Truncate(info.Principal.FindFirstValue(ClaimTypes.Name), 64);
     }
+
+    // No profile yet: set it up first, then continue to where the user was going.
+    private static string Onboarding(string returnUrl) => $"/onboarding?returnUrl={Uri.EscapeDataString(returnUrl)}";
 
     private static string? Truncate(string? s, int max) => s is { Length: > 0 } && s.Length > max ? s[..max] : s;
 }

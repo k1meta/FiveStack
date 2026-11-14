@@ -52,23 +52,24 @@ erDiagram
     string DisplayName
     string RiotName
     string RiotTag
-    enum Region
+    string Region
     text[] Servers
-    enum Platform
-    enum Rank
-    enum PeakRank
+    string Platform
+    int Rank
+    int PeakRank
     text[] Roles
     text[] Agents
     text[] Languages
-    enum Mic
+    string Mic
     text[] Modes
-    enum Playstyle
+    string Playstyle
     text[] PlayTimes
     string Bio
     string DiscordId
     string DiscordUsername
     bool ShowDiscord
     bool IsDemo
+    timestamptz OnboardedAt
     timestamptz LastActiveAt
   }
   SquadPost {
@@ -120,7 +121,7 @@ Roles, agents, languages and servers are small sets of known values. Storing the
 - "plays any of these agents" is one indexed predicate: `agents && ARRAY['omen','viper']`. EF Core expresses it as `u.Agents.Any(a => filter.Contains(a))`.
 - No join tables, no N+1 queries, and the profile save is a single row update.
 
-Valid values come from `Meta/` (one source of truth) and are checked on write.
+Valid values come from `Meta/` (one source of truth) and are checked on write. Single-value fields (region, platform, mic, playstyle) are plain strings holding meta ids rather than C# enums, so the values are defined in exactly one place. `Rank` and `PeakRank` are the valorant-api competitive tier number (0 = Unranked, 3 = Iron 1 … 27 = Radiant), which makes rank-range filters a simple `BETWEEN` and maps directly to the tier icon URL.
 
 ## Authentication
 

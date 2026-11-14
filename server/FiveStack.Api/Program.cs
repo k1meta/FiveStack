@@ -1,5 +1,6 @@
 using System.Threading.RateLimiting;
 using FiveStack.Api.Data;
+using FiveStack.Api.Meta;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -63,6 +64,7 @@ app.UseStaticFiles(); // Angular build is copied into wwwroot by the Dockerfile
 app.UseRateLimiter();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
+app.MapGet("/api/meta", () => GameData.All);
 app.MapGroup("/api/auth").MapIdentityApi<AppUser>().RequireRateLimiting("auth"); // login with ?useCookies=true
 app.MapControllers();
 app.MapFallbackToFile("index.html"); // client-side routes

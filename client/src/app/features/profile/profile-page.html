@@ -1,0 +1,109 @@
+<section class="mx-auto max-w-4xl px-4 py-12">
+  @if (profile.value(); as p) {
+    @let m = meta.meta.value();
+    <header class="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <div>
+        <h1 class="font-display text-5xl uppercase tracking-wide">
+          {{ p.riotName }}<span class="text-val-bone/40">#{{ p.riotTag }}</span>
+        </h1>
+        <p class="mt-2 text-sm uppercase tracking-wider text-val-bone/70">
+          {{ meta.name(m?.regions, p.region) }}
+          @if (p.platform) { · {{ meta.name(m?.platforms, p.platform) }} }
+          @if (p.playstyle) { · {{ meta.name(m?.playstyles, p.playstyle) }} }
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        @if (p.discordUsername; as discord) {
+          <button type="button" (click)="copyDiscord(discord)"
+                  class="clip-angle bg-val-red px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:brightness-110">
+            {{ copied() ? 'Copied!' : 'Copy Discord' }}
+          </button>
+        }
+        <a [href]="trackerUrl(p)" target="_blank" rel="noopener"
+           class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal">
+          View on tracker.gg
+        </a>
+        @if (isMe()) {
+          <a routerLink="/settings" class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal">
+            Edit profile
+          </a>
+        }
+      </div>
+    </header>
+
+    <div class="mt-8 grid gap-8 md:grid-cols-[16rem_1fr]">
+      <dl class="space-y-5">
+        <div>
+          <dt class="field-label text-val-bone/60">Rank</dt>
+          <dd class="mt-1"><app-rank-badge [tier]="p.rank" /></dd>
+        </div>
+        @if (p.peakRank !== null) {
+          <div>
+            <dt class="field-label text-val-bone/60">Peak</dt>
+            <dd class="mt-1"><app-rank-badge [tier]="p.peakRank" /></dd>
+          </div>
+        }
+        <div>
+          <dt class="field-label text-val-bone/60">Roles</dt>
+          <dd class="mt-1">{{ meta.names(m?.roles, p.roles) }}</dd>
+        </div>
+        @if (p.mic) {
+          <div>
+            <dt class="field-label text-val-bone/60">Mic</dt>
+            <dd class="mt-1">{{ meta.name(m?.mic, p.mic) }}</dd>
+          </div>
+        }
+        @if (p.languages.length) {
+          <div>
+            <dt class="field-label text-val-bone/60">Languages</dt>
+            <dd class="mt-1">{{ meta.names(m?.languages, p.languages) }}</dd>
+          </div>
+        }
+        @if (p.servers.length) {
+          <div>
+            <dt class="field-label text-val-bone/60">Servers</dt>
+            <dd class="mt-1">{{ meta.names(meta.servers(), p.servers) }}</dd>
+          </div>
+        }
+      </dl>
+
+      <div class="space-y-8">
+        @if (p.bio) {
+          <p class="whitespace-pre-line border-l-4 border-val-red bg-val-ink px-4 py-3">{{ p.bio }}</p>
+        }
+        @if (p.agents.length) {
+          <div>
+            <h2 class="field-label text-val-bone/60">Agents</h2>
+            <ul class="mt-2 flex flex-wrap gap-3">
+              @for (id of p.agents; track id) {
+                @if (meta.agent(id); as a) {
+                  <li class="flex flex-col items-center gap-1 text-xs">
+                    <img [src]="a.icon" [alt]="a.name" class="size-14 bg-val-ink" />
+                    {{ a.name }}
+                  </li>
+                }
+              }
+            </ul>
+          </div>
+        }
+        @if (p.modes.length) {
+          <div>
+            <h2 class="field-label text-val-bone/60">Modes</h2>
+            <p class="mt-1">{{ meta.names(m?.modes, p.modes) }}</p>
+          </div>
+        }
+        @if (p.playTimes.length) {
+          <div>
+            <h2 class="field-label text-val-bone/60">Usually online</h2>
+            <p class="mt-1">{{ meta.names(m?.playTimes, p.playTimes) }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  } @else if (profile.error()) {
+    <h1 class="font-display text-4xl uppercase">Player not found</h1>
+    <p class="mt-2 text-val-bone/70">This profile doesn't exist or isn't set up yet.</p>
+  } @else {
+    <p class="text-val-bone/60">Loading…</p>
+  }
+</section>

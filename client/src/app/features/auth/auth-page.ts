@@ -3,6 +3,7 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { errorMessage, safeReturnUrl } from '../../core/util';
 
 const SERVER_ERRORS: Record<string, string> = {
   'email-in-use': 'An account with that email already exists. Log in with your password, then link the provider in Settings.',
@@ -29,11 +30,7 @@ export class AuthPage {
   protected failure = signal<string | null>(null);
   protected message = computed(() => this.failure() ?? SERVER_ERRORS[this.error() ?? ''] ?? null);
 
-  /** Only same-site paths, so a crafted link can't bounce users off-site. */
-  protected safeReturnUrl = computed(() => {
-    const url = this.returnUrl();
-    return url?.startsWith('/') && !url.startsWith('//') ? url : '/';
-  });
+  protected safeReturnUrl = computed(() => safeReturnUrl(this.returnUrl()));
 
   protected form = inject(FormBuilder).nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -50,20 +47,12 @@ export class AuthPage {
     this.failure.set(null);
     try {
       await (this.mode() === 'login' ? this.auth.login(email, password) : this.auth.register(email, password));
-      await this.router.navigateByUrl(this.safeReturnUrl());
+      if (this.auth.user()?.onboarded) await this.router.navigateByUrl(this.safeReturnUrl());
+      else await this.router.navigate(['/onboarding'], { queryParams: { returnUrl: this.safeReturnUrl() } });
     } catch (e) {
-      this.failure.set(errorMessage(e));
+      this.failure.set(e instanceof HttpErrorResponse && e.status === 401 ? 'Wrong email or password.' : errorMessage(e));
     } finally {
       this.busy.set(false);
     }
   }
-}
-
-function errorMessage(e: unknown): string {
-  if (!(e instanceof HttpErrorResponse)) return 'Something went wrong.';
-  if (e.status === 401) return 'Wrong email or password.';
-  if (e.status === 429) return 'Too many attempts. Wait a minute and try again.';
-  // Identity returns ValidationProblemDetails: { errors: { DuplicateUserName: ["..."], ... } }
-  const errors = e.error?.errors as Record<string, string[]> | undefined;
-  return errors ? Object.values(errors).flat().join(' ') : 'Something went wrong.';
 }

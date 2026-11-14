@@ -21,4 +21,8 @@
     <PackageReference Include="Scalar.AspNetCore" Version="2.21.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Meta/agents.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
