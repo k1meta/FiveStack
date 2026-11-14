@@ -1,0 +1,94 @@
+<section class="mx-auto max-w-6xl px-4 py-12">
+  <h1 class="font-display text-4xl uppercase tracking-wide md:block" [class.hidden]="id()">Messages</h1>
+
+  <div class="mt-6 grid gap-6 md:grid-cols-[18rem_1fr]">
+    <!-- On phones, the list and the thread take turns. -->
+    <nav aria-label="Conversations" [class.hidden]="id()" class="md:block">
+      <ul class="space-y-1">
+        @for (c of chat.conversations(); track c.id) {
+          <li>
+            <a [routerLink]="['/messages', c.id]" [class.border-val-red]="c.id === id()"
+               class="flex items-center gap-3 border border-white/10 bg-val-ink p-3 hover:border-val-teal">
+              <span class="min-w-0 flex-1">
+                <span class="flex items-center gap-2 font-semibold">
+                  @if (c.other?.online) { <span class="size-2 shrink-0 rounded-full bg-val-teal" aria-label="Online"></span> }
+                  <span class="truncate">{{ c.title }}</span>
+                  @if (c.squadPostId) { <span class="text-xs uppercase tracking-wider text-val-bone/50">Squad</span> }
+                </span>
+                <span class="block truncate text-sm text-val-bone/60">
+                  {{ c.last ? (c.last.senderId === auth.user()?.id ? 'You: ' : '') + c.last.body : 'No messages yet' }}
+                </span>
+              </span>
+              @if (c.unread) {
+                <span class="bg-val-red px-2 py-0.5 text-xs font-semibold" [attr.aria-label]="c.unread + ' unread'">{{ c.unread }}</span>
+              }
+            </a>
+          </li>
+        } @empty {
+          <li class="text-sm text-val-bone/60">
+            No conversations yet. Message someone from <a routerLink="/players" class="text-val-teal hover:underline">their profile</a>
+            or join a <a routerLink="/squads" class="text-val-teal hover:underline">squad</a>.
+          </li>
+        }
+      </ul>
+    </nav>
+
+    @if (id()) {
+      @let c = current();
+      <div class="flex min-w-0 flex-col border border-white/10">
+        <header class="flex items-center gap-3 border-b border-white/10 p-3">
+          <a routerLink="/messages" class="text-sm uppercase tracking-wider text-val-bone/60 hover:text-val-red md:hidden" aria-label="All conversations">←</a>
+          <h2 class="min-w-0 flex-1 truncate font-semibold">{{ c?.title ?? 'Conversation' }}</h2>
+          @if (c?.other; as o) {
+            <a [routerLink]="['/u', o.id]" class="text-xs font-semibold uppercase tracking-wider text-val-teal hover:underline">Profile</a>
+          }
+          @if (c?.squadPostId; as postId) {
+            <a [routerLink]="['/squads', postId]" class="text-xs font-semibold uppercase tracking-wider text-val-teal hover:underline">Squad</a>
+          }
+        </header>
+
+        <!-- column-reverse keeps the view pinned to the newest message without any scroll code -->
+        <div class="flex h-[60vh] flex-col-reverse overflow-y-auto p-3" aria-live="polite">
+          <ol class="space-y-2">
+            @if (hasOlder()) {
+              <li class="text-center">
+                <button type="button" (click)="loadOlder()" [disabled]="loading()"
+                        class="text-xs font-semibold uppercase tracking-wider text-val-teal hover:underline disabled:opacity-50">
+                  Load older
+                </button>
+              </li>
+            }
+            @for (m of thread(); track m.id) {
+              @let mine = m.senderId === auth.user()?.id;
+              <li class="flex" [class.justify-end]="mine">
+                <div class="max-w-[80%] px-3 py-2" [class]="mine ? 'bg-val-red/20' : 'bg-val-ink'">
+                  @if (!mine && c?.squadPostId) { <p class="text-xs font-semibold text-val-teal">{{ m.senderName }}</p> }
+                  <p class="whitespace-pre-line break-words">{{ m.body }}</p>
+                  <p class="mt-1 text-right text-[10px] text-val-bone/40"><time [attr.datetime]="m.sentAt">{{ m.sentAt | date: 'short' }}</time></p>
+                </div>
+              </li>
+            } @empty {
+              @if (!loading() && !failure()) { <li class="text-center text-sm text-val-bone/60">Say hi.</li> }
+            }
+          </ol>
+        </div>
+
+        @if (failure(); as f) { <p class="px-3 text-sm text-val-red" role="alert">{{ f }}</p> }
+
+        <form (submit)="send($event)" class="flex gap-2 border-t border-white/10 p-3">
+          <label class="flex-1">
+            <span class="sr-only">Message</span>
+            <input class="field" maxlength="1000" autocomplete="off" placeholder="Message"
+                   [value]="draft()" (input)="draft.set($any($event.target).value)" />
+          </label>
+          <button type="submit" [disabled]="sending() || !draft().trim()"
+                  class="clip-angle bg-val-red px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:brightness-110 disabled:opacity-50">
+            Send
+          </button>
+        </form>
+      </div>
+    } @else {
+      <p class="hidden self-center text-center text-val-bone/60 md:block">Pick a conversation.</p>
+    }
+  </div>
+</section>

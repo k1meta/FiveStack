@@ -5,6 +5,12 @@
       <a routerLink="/players" routerLinkActive="text-val-red" class="hover:text-val-red">Players</a>
       <a routerLink="/squads" routerLinkActive="text-val-red" class="hover:text-val-red">Squads</a>
       @if (auth.user(); as u) {
+        <a routerLink="/messages" routerLinkActive="text-val-red" class="flex items-center gap-1.5 hover:text-val-red">
+          Messages
+          @if (chat.unread(); as n) {
+            <span class="bg-val-red px-1.5 text-xs text-val-bone" [attr.aria-label]="n + ' unread'">{{ n > 99 ? '99+' : n }}</span>
+          }
+        </a>
         <a [routerLink]="u.onboarded ? ['/u', u.id] : '/onboarding'" class="normal-case tracking-normal text-val-bone/80 hover:text-val-red">
           {{ u.displayName ?? u.email }}
         </a>

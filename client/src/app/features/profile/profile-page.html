@@ -28,6 +28,18 @@
            class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal">
           View on tracker.gg
         </a>
+        @if (auth.user() && !isMe()) {
+          @if (auth.user()?.onboarded && !blocked()) {
+            <button type="button" (click)="message()" [disabled]="busy()"
+                    class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal disabled:opacity-50">
+              Message
+            </button>
+          }
+          <button type="button" (click)="toggleBlock(p)" [disabled]="busy()"
+                  class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-red disabled:opacity-50">
+            {{ blocked() ? 'Unblock' : 'Block' }}
+          </button>
+        }
         @if (isMe()) {
           <a routerLink="/settings" class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal">
             Edit profile
@@ -35,6 +47,7 @@
         }
       </div>
     </header>
+    @if (failure(); as f) { <p class="mt-3 text-sm text-val-red" role="alert">{{ f }}</p> }
 
     <div class="mt-8 grid gap-8 md:grid-cols-[16rem_1fr]">
       <dl class="space-y-5">
