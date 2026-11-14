@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-val-red: #ff4655;
+  --color-val-navy: #0f1923;
+  --color-val-ink: #1f2731;
+  --color-val-bone: #ece8e1;
+  --color-val-teal: #3ce0c8;
+  --font-display: "Anton", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html { color-scheme: dark; }
+  body { @apply bg-val-navy text-val-bone font-sans antialiased; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-val-teal; }
+}
+
+/* Angled corner used on buttons/cards */
+@utility clip-angle {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}

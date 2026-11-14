@@ -1,0 +1,18 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+server/FiveStack.Api/wwwroot/
+
+# Secrets
+.env
+*.local.json
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+
+# Local AI assistant notes
+CLAUDE.md

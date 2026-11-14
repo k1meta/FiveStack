@@ -1,0 +1,21 @@
+<header class="sticky top-0 z-50 border-b border-white/10 bg-val-navy/90 backdrop-blur">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3" aria-label="Main">
+    <a routerLink="/" class="font-display text-2xl tracking-wide text-val-bone">FIVE<span class="text-val-red">STACK</span></a>
+    <div class="flex items-center gap-5 text-sm font-semibold uppercase tracking-wider">
+      <a routerLink="/players" routerLinkActive="text-val-red" class="hover:text-val-red">Players</a>
+      <a routerLink="/squads" routerLinkActive="text-val-red" class="hover:text-val-red">Squads</a>
+    </div>
+  </nav>
+</header>
+
+<main class="min-h-[calc(100vh-8rem)]">
+  <router-outlet />
+</main>
+
+<footer class="border-t border-white/10 px-4 py-6 text-center text-xs text-val-bone/60">
+  <p>
+    FiveStack isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone
+    officially involved in producing or managing Riot Games properties. Riot Games and all associated
+    properties are trademarks or registered trademarks of Riot Games, Inc.
+  </p>
+</footer>

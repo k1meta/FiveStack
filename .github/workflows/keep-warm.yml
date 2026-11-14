@@ -1,0 +1,15 @@
+# Render free instances sleep after 15 min idle. Ping every 10 min so the demo loads fast for recruiters.
+name: Keep warm
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          URL: ${{ vars.APP_URL }}
+        run: if [ -n "$URL" ]; then curl -fsS "$URL/api/health"; else echo "APP_URL not set, skipping"; fi

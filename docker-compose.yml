@@ -1,0 +1,12 @@
+# Local dev database only. The API and client run with `dotnet run` / `ng serve`.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: fivestack
+      POSTGRES_PASSWORD: fivestack
+      POSTGRES_DB: fivestack
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+volumes:
+  pgdata:

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FiveStack.Api.Tests/FiveStack.Api.Tests.csproj" />
+  <Project Path="FiveStack.Api/FiveStack.Api.csproj" />
+</Solution>
