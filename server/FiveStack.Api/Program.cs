@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Threading.RateLimiting;
 using FiveStack.Api.Data;
 using FiveStack.Api.Meta;
@@ -42,12 +43,13 @@ builder.Services.AddDataProtection()
     .PersistKeysToDbContext<AppDbContext>()
     .SetApplicationName("FiveStack");
 
+var authPerMinute = config.GetValue("RateLimits:AuthPerMinute", 20); // tests raise it: they all share one "IP"
 builder.Services.AddRateLimiter(o =>
 {
     o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     o.AddPolicy("auth", ctx => RateLimitPartition.GetFixedWindowLimiter(
         ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-        _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1) }));
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = authPerMinute, Window = TimeSpan.FromMinutes(1) }));
 });
 
 var app = builder.Build();
@@ -62,6 +64,22 @@ app.MapScalarApiReference(); // API docs at /scalar
 app.UseDefaultFiles();
 app.UseStaticFiles(); // Angular build is copied into wwwroot by the Dockerfile
 app.UseRateLimiter();
+
+// "Online now" heartbeat: stamp LastActiveAt at most once a minute per signed-in user.
+// ponytail: one PK update per authenticated API call; M5's SignalR presence can replace it.
+app.Use(async (ctx, next) =>
+{
+    if (ctx.Request.Path.StartsWithSegments("/api") && ctx.User.Identity?.IsAuthenticated == true
+        && Guid.TryParse(ctx.User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
+    {
+        var now = DateTimeOffset.UtcNow;
+        var stale = now.AddMinutes(-1);
+        await ctx.RequestServices.GetRequiredService<AppDbContext>().Users
+            .Where(u => u.Id == id && (u.LastActiveAt == null || u.LastActiveAt < stale))
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.LastActiveAt, now));
+    }
+    await next();
+});
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
 app.MapGet("/api/meta", () => GameData.All);
