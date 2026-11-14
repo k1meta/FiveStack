@@ -32,11 +32,11 @@
 - [x] Integration tests: board filters, one open post, accept until full, expiry
 
 ## M5: Chat
-- [ ] `ChatHub`, conversations, messages, unread counts
-- [ ] Squad conversation: host on post create, accepted player added on accept; push join requests instead of the 15s poll
-- [ ] Presence ("online now"), blocks, rate limits
-- [ ] Messages UI (list + thread), live updates
-- [ ] Integration tests: non-member can't read/send, blocked user can't DM
+- [x] `ChatHub`, conversations, messages, unread counts
+- [x] Squad conversation: host on post create, accepted player added on accept; push join requests instead of the 15s poll
+- [x] Presence ("online now"), blocks, rate limits
+- [x] Messages UI (list + thread), live updates
+- [x] Integration tests: non-member can't read/send, blocked user can't DM
 
 ## M6: Landing + art
 - [ ] Higgsfield art on the Starter plan (200 credits total, no top-ups planned). Original characters only. Stills first: hero, 4 role cards, OG image (reuse a crop of the hero). Check each model's credit cost before generating, and keep a few credits back for one retry.
@@ -57,3 +57,4 @@
 - Report user / moderation queue
 - "Quick match" compatibility scoring
 - Redis SignalR backplane (only if running more than one instance)
+- Chat extras: typing indicator, live presence dots, leave a squad chat, blocked-players list in Settings, browser notifications
