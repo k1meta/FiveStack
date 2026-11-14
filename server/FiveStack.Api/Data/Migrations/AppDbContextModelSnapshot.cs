@@ -153,6 +153,9 @@ namespace FiveStack.Api.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsDemo")
+                        .HasColumnType("boolean");
+
                     b.PrimitiveCollection<string[]>("Languages")
                         .IsRequired()
                         .HasColumnType("text[]");

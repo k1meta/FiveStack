@@ -7,6 +7,7 @@
       <div class="flex flex-wrap items-center justify-between gap-3 border border-white/10 bg-val-ink p-3">
         <a [routerLink]="['/u', p.id]" class="min-w-0 hover:text-val-red">
           <span class="font-semibold">{{ p.riotName }}<span class="text-val-bone/40">#{{ p.riotTag }}</span></span>
+          @if (p.isDemo) { <span class="demo-chip" title="Sample player for the live demo">Demo</span> }
           <span class="block text-xs text-val-bone/60">{{ meta.names(m?.roles, p.roles) }}</span>
         </a>
         <div class="flex items-center gap-3">
@@ -100,6 +101,8 @@
               Close squad
             </button>
           }
+        } @else if (s.host.isDemo) {
+          <p class="text-val-bone/70">Demo squad: sign-ups are off. Post your own or find a real one on the board.</p>
         } @else if (!auth.user()) {
           @if (s.open) {
             <a [routerLink]="loginUrl()" class="clip-angle inline-block bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110">

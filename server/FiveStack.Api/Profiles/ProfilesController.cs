@@ -34,7 +34,7 @@ public record ProfileDto
 public record PublicProfileDto(
     Guid Id, string? DisplayName, string? RiotName, string? RiotTag, string? Region, string[] Servers,
     string? Platform, int? Rank, int? PeakRank, string[] Roles, string[] Agents, string[] Languages, string? Mic,
-    string[] Modes, string? Playstyle, string[] PlayTimes, string? Bio, string? DiscordUsername, bool Online);
+    string[] Modes, string? Playstyle, string[] PlayTimes, string? Bio, string? DiscordUsername, bool Online, bool IsDemo);
 
 [ApiController]
 [Route("api")]
@@ -101,7 +101,8 @@ public class ProfilesController(UserManager<AppUser> users, SignInManager<AppUse
         u.Id, u.DisplayName, u.RiotName, u.RiotTag, u.Region, u.Servers, u.Platform, u.Rank, u.PeakRank, u.Roles,
         u.Agents, u.Languages, u.Mic, u.Modes, u.Playstyle, u.PlayTimes, u.Bio,
         u.ShowDiscord ? u.DiscordUsername : null,
-        Presence.IsOnline(u.Id) || u.LastActiveAt > DateTimeOffset.UtcNow - OnlineWindow);
+        Presence.IsOnline(u.Id) || u.LastActiveAt > DateTimeOffset.UtcNow - OnlineWindow,
+        u.IsDemo);
 
     [Authorize]
     [HttpDelete("me")]

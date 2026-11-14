@@ -28,6 +28,7 @@ export interface PublicProfile {
   bio: string | null;
   discordUsername: string | null;
   online: boolean;
+  isDemo: boolean;
 }
 
 /** Public profile at /u/:id. */

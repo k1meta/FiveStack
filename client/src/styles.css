@@ -36,6 +36,9 @@
 @utility field-label {
   @apply text-sm font-semibold uppercase tracking-wider;
 }
+@utility demo-chip {
+  @apply ml-2 inline-block border border-val-bone/30 px-1.5 py-0.5 align-middle font-sans text-[10px] font-semibold uppercase tracking-wider text-val-bone/70;
+}
 @utility field-error {
   @apply mt-1 block text-xs text-val-red;
 }

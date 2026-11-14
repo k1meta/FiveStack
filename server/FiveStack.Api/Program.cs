@@ -69,7 +69,15 @@ var app = builder.Build();
 
 // ponytail: migrate on startup, fine for one instance; move to a release step if we ever scale out.
 using (var scope = app.Services.CreateScope())
-    scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+    if (config.GetValue<bool>("Demo:Seed"))
+    {
+        await DemoSeed.SeedAsync(db);
+        await DemoSeed.TopUpPostsAsync(db);
+    }
+}
 
 app.MapOpenApi();
 app.MapScalarApiReference(); // API docs at /scalar

@@ -56,12 +56,12 @@ public record Decision([Required] string Status);
 
 [ApiController]
 [Route("api/squads")]
-public class SquadsController(AppDbContext db, UserManager<AppUser> users, IHubContext<ChatHub> hub) : ControllerBase
+public class SquadsController(AppDbContext db, UserManager<AppUser> users, IHubContext<ChatHub> hub, IConfiguration config) : ControllerBase
 {
     const int PageSize = 24;
     public static readonly TimeSpan Lifetime = TimeSpan.FromHours(3);
 
-    static Expression<Func<SquadPost, bool>> IsOpen(DateTimeOffset now) =>
+    internal static Expression<Func<SquadPost, bool>> IsOpen(DateTimeOffset now) =>
         p => p.ClosedAt == null && p.ExpiresAt > now && p.SlotsOpen > 0;
 
     Guid? MeId => Guid.TryParse(users.GetUserId(User), out var id) ? id : null;
@@ -69,6 +69,8 @@ public class SquadsController(AppDbContext db, UserManager<AppUser> users, IHubC
     [HttpGet]
     public async Task<SquadPage> Search([FromQuery] SquadSearch f)
     {
+        // ponytail: one COUNT per board load; demo posts expire after 3h and keep-warm keeps the instance up.
+        if (config.GetValue<bool>("Demo:Seed")) await DemoSeed.TopUpPostsAsync(db);
         var q = db.SquadPosts.AsNoTracking().Include(p => p.Host).Where(IsOpen(DateTimeOffset.UtcNow));
 
         if (f.Region is not null) q = q.Where(p => p.Region == f.Region);
@@ -165,9 +167,10 @@ public class SquadsController(AppDbContext db, UserManager<AppUser> users, IHubC
     {
         if (await Onboarded() is { } fail) return fail;
         var me = MeId!.Value;
-        var post = await db.SquadPosts.AsNoTracking().Where(IsOpen(DateTimeOffset.UtcNow)).FirstOrDefaultAsync(p => p.Id == id);
+        var post = await db.SquadPosts.AsNoTracking().Include(p => p.Host).Where(IsOpen(DateTimeOffset.UtcNow)).FirstOrDefaultAsync(p => p.Id == id);
         if (post is null) return Problem("This squad is closed, full or expired.", statusCode: 409);
         if (post.HostId == me) return Problem("You host this squad.", statusCode: 409);
+        if (post.Host.IsDemo) return Problem("Demo squads don't take sign-ups.", statusCode: 409);
 
         db.JoinRequests.Add(new JoinRequest { PostId = id, UserId = me, CreatedAt = DateTimeOffset.UtcNow });
         try

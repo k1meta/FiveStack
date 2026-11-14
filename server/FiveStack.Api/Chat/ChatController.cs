@@ -62,7 +62,9 @@ public class ChatController(AppDbContext db, UserManager<AppUser> users, IHubCon
         if (userId == me) return Problem("You can't message yourself.", statusCode: 400);
         if (!await db.Users.AnyAsync(u => u.Id == me && u.OnboardedAt != null))
             return Problem("Finish your profile first.", statusCode: 403);
-        if (!await db.Users.AnyAsync(u => u.Id == userId && u.OnboardedAt != null)) return NotFound();
+        if (await db.Users.Where(u => u.Id == userId && u.OnboardedAt != null).Select(u => (bool?)u.IsDemo).FirstOrDefaultAsync()
+            is not { } demo) return NotFound();
+        if (demo) return Problem("Demo players can't be messaged.", statusCode: 409);
         if (await Blocked(me, userId)) return Problem("You can't message this player.", statusCode: 403);
 
         var key = Conversation.KeyFor(me, userId);

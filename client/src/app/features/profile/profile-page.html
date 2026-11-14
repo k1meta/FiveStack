@@ -5,6 +5,7 @@
       <div>
         <h1 class="font-display text-5xl uppercase tracking-wide">
           {{ p.riotName }}<span class="text-val-bone/40">#{{ p.riotTag }}</span>
+          @if (p.isDemo) { <span class="demo-chip" title="Sample player for the live demo">Demo</span> }
         </h1>
         <p class="mt-2 text-sm uppercase tracking-wider text-val-bone/70">
           @if (p.online) {
@@ -29,7 +30,7 @@
           View on tracker.gg
         </a>
         @if (auth.user() && !isMe()) {
-          @if (auth.user()?.onboarded && !blocked()) {
+          @if (auth.user()?.onboarded && !blocked() && !p.isDemo) {
             <button type="button" (click)="message()" [disabled]="busy()"
                     class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal disabled:opacity-50">
               Message

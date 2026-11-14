@@ -28,4 +28,5 @@ public class AppUser : IdentityUser<Guid>
     [MaxLength(300)] public string? Bio { get; set; }
     public DateTimeOffset? OnboardedAt { get; set; } // set on the first profile save
     public DateTimeOffset? LastActiveAt { get; set; } // bumped by authenticated API calls, see Program.cs
+    public bool IsDemo { get; set; } // seeded by Data/DemoSeed.cs: can't log in, be messaged or be joined
 }
