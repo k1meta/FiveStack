@@ -24,6 +24,7 @@ export interface PublicProfile {
   playTimes: string[];
   bio: string | null;
   discordUsername: string | null;
+  online: boolean;
 }
 
 /** Public profile at /u/:id. */

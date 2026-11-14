@@ -152,6 +152,7 @@ sequenceDiagram
 - `SendMessage(conversationId, body)`: membership check, block check, rate limit, persist, then broadcast `MessageReceived` to the group.
 - Unread count = messages newer than `ConversationMember.LastReadAt`.
 - Presence: an in-memory map of userId to connection count. This works only with a single instance. Scaling out requires a Redis backplane and Redis-backed presence.
+- Until the hub exists (M5), "online now" comes from `LastActiveAt`: middleware stamps it at most once a minute on authenticated API calls, and a player counts as online for 5 minutes after.
 
 ## Security checklist
 

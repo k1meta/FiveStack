@@ -66,6 +66,9 @@ namespace FiveStack.Api.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text[]");
 
+                    b.Property<DateTimeOffset?>("LastActiveAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
@@ -153,12 +156,36 @@ namespace FiveStack.Api.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Agents");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Agents"), "gin");
+
+                    b.HasIndex("Languages");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Languages"), "gin");
+
+                    b.HasIndex("Modes");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Modes"), "gin");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("PlayTimes");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("PlayTimes"), "gin");
+
+                    b.HasIndex("Roles");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Roles"), "gin");
+
+                    b.HasIndex("Servers");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Servers"), "gin");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });

@@ -7,6 +7,11 @@
           {{ p.riotName }}<span class="text-val-bone/40">#{{ p.riotTag }}</span>
         </h1>
         <p class="mt-2 text-sm uppercase tracking-wider text-val-bone/70">
+          @if (p.online) {
+            <span class="mr-2 inline-flex items-center gap-1 text-val-teal">
+              <span class="size-2 rounded-full bg-val-teal" aria-hidden="true"></span>Online ·
+            </span>
+          }
           {{ meta.name(m?.regions, p.region) }}
           @if (p.platform) { · {{ meta.name(m?.platforms, p.platform) }} }
           @if (p.playstyle) { · {{ meta.name(m?.playstyles, p.playstyle) }} }

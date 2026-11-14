@@ -33,7 +33,7 @@ public record ProfileDto
 public record PublicProfileDto(
     Guid Id, string? DisplayName, string? RiotName, string? RiotTag, string? Region, string[] Servers,
     string? Platform, int? Rank, int? PeakRank, string[] Roles, string[] Agents, string[] Languages, string? Mic,
-    string[] Modes, string? Playstyle, string[] PlayTimes, string? Bio, string? DiscordUsername);
+    string[] Modes, string? Playstyle, string[] PlayTimes, string? Bio, string? DiscordUsername, bool Online);
 
 [ApiController]
 [Route("api")]
@@ -89,11 +89,18 @@ public class ProfilesController(UserManager<AppUser> users, SignInManager<AppUse
     {
         var u = await db.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.OnboardedAt != null);
         if (u is null) return NotFound();
-        return new PublicProfileDto(
-            u.Id, u.DisplayName, u.RiotName, u.RiotTag, u.Region, u.Servers, u.Platform, u.Rank, u.PeakRank, u.Roles,
-            u.Agents, u.Languages, u.Mic, u.Modes, u.Playstyle, u.PlayTimes, u.Bio,
-            u.ShowDiscord ? u.DiscordUsername : null);
+        return ToPublic(u);
     }
+
+    /// <summary>"Online now" = an authenticated API call within this window (LastActiveAt).</summary>
+    public static readonly TimeSpan OnlineWindow = TimeSpan.FromMinutes(5);
+
+    /// <summary>What anyone may see about a player. Discord only when the player opted in.</summary>
+    internal static PublicProfileDto ToPublic(AppUser u) => new(
+        u.Id, u.DisplayName, u.RiotName, u.RiotTag, u.Region, u.Servers, u.Platform, u.Rank, u.PeakRank, u.Roles,
+        u.Agents, u.Languages, u.Mic, u.Modes, u.Playstyle, u.PlayTimes, u.Bio,
+        u.ShowDiscord ? u.DiscordUsername : null,
+        u.LastActiveAt > DateTimeOffset.UtcNow - OnlineWindow);
 
     [Authorize]
     [HttpDelete("me")]
