@@ -76,21 +76,24 @@ erDiagram
     uuid Id PK
     uuid HostId FK
     string Title
-    enum Mode
-    enum Region
+    string Mode
+    string Region
     string Server
-    enum RankMin
-    enum RankMax
+    int RankMin
+    int RankMax
     text[] NeededRoles
     text[] NeededAgents
     int SlotsOpen
     bool MicRequired
+    timestamptz CreatedAt
     timestamptz ExpiresAt
+    timestamptz ClosedAt
   }
   JoinRequest {
-    uuid PostId FK
-    uuid UserId FK
-    enum Status
+    uuid PostId PK
+    uuid UserId PK
+    string Status
+    timestamptz CreatedAt
   }
   Conversation {
     uuid Id PK
@@ -122,6 +125,10 @@ Roles, agents, languages and servers are small sets of known values. Storing the
 - No join tables, no N+1 queries, and the profile save is a single row update.
 
 Valid values come from `Meta/` (one source of truth) and are checked on write. Single-value fields (region, platform, mic, playstyle) are plain strings holding meta ids rather than C# enums, so the values are defined in exactly one place. `Rank` and `PeakRank` are the valorant-api competitive tier number (0 = Unranked, 3 = Iron 1 … 27 = Radiant), which makes rank-range filters a simple `BETWEEN` and maps directly to the tier icon URL.
+
+### Squads
+
+A post is **open** while `ClosedAt` is null, `ExpiresAt` (created + 3h) is in the future, and `SlotsOpen > 0`. Expiry is checked at query time, so no background job is needed. A host can have one open post at a time. `JoinRequest.Status` is `pending`, `accepted` or `declined`. Accepting runs two conditional updates in one transaction: pending → accepted, then `SlotsOpen - 1` where the post is still open. Concurrent accepts therefore can't oversell slots.
 
 ## Authentication
 
