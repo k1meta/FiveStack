@@ -89,6 +89,8 @@ cd client && npm test -- --watch=false
 
 FiveStack isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
 
-Agent and rank icons come from [valorant-api.com](https://valorant-api.com) under Riot's fan-content policy. Hero artwork is original AI-generated art and does not depict Riot characters.
+FiveStack was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.
+
+Agent and rank icons come from [valorant-api.com](https://valorant-api.com) under Riot's fan-content policy. Landing artwork is AI-generated fan art of Valorant agents and maps. It contains no Riot logos.
 
 Licensed under [MIT](LICENSE).

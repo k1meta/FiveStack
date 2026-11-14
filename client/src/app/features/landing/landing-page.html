@@ -1,0 +1,78 @@
+<ng-template #ctas>
+  <div class="flex flex-wrap gap-3">
+    @if (auth.user()) {
+      <a routerLink="/players" class="clip-angle bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110">Find players</a>
+      <a routerLink="/squads" class="clip-angle border border-val-bone/60 px-6 py-3 font-semibold uppercase tracking-wider hover:border-val-red hover:text-val-red">Open squads</a>
+    } @else {
+      <a routerLink="/register" class="clip-angle bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110">Sign up free</a>
+      <a routerLink="/squads" class="clip-angle border border-val-bone/60 px-6 py-3 font-semibold uppercase tracking-wider hover:border-val-red hover:text-val-red">Browse squads</a>
+    }
+  </div>
+</ng-template>
+
+<section class="relative isolate flex min-h-[80vh] items-center overflow-hidden" aria-labelledby="hero-title">
+  <!-- ponytail: CSS pan/zoom on a still; reduced-motion users get the still -->
+  <img src="/assets/hero/hero.webp" srcset="/assets/hero/hero-960.webp 960w, /assets/hero/hero.webp 1920w" sizes="100vw"
+       width="1920" height="1086" alt="" fetchpriority="high"
+       class="absolute inset-0 -z-10 size-full object-cover object-right motion-safe:animate-hero-pan" />
+  <div class="absolute inset-0 -z-10 bg-linear-to-r from-val-navy via-val-navy/80 to-transparent"></div>
+  <div class="mx-auto w-full max-w-7xl px-4 py-20">
+    <div class="max-w-xl">
+      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-val-teal">Valorant team finder</p>
+      <h1 id="hero-title" class="mt-4 font-display text-6xl uppercase leading-none tracking-wide sm:text-7xl">
+        Stop solo queuing.<br /><span class="text-val-red">Build your five-stack.</span>
+      </h1>
+      <p class="mt-6 text-lg text-val-bone/80">
+        Find teammates by role, agent, rank, region, language and mic. Post a squad, accept players and chat in real time.
+      </p>
+      <div class="mt-8"><ng-container *ngTemplateOutlet="ctas" /></div>
+    </div>
+  </div>
+</section>
+
+<section class="mx-auto max-w-7xl px-4 py-20" aria-labelledby="how-title">
+  <h2 id="how-title" class="font-display text-4xl uppercase tracking-wide">How it works</h2>
+  <ol class="mt-10 grid gap-6 md:grid-cols-3">
+    @for (s of steps; track s.title; let i = $index) {
+      <li class="clip-angle bg-val-ink p-6">
+        <span class="font-display text-5xl text-val-red" aria-hidden="true">0{{ i + 1 }}</span>
+        <h3 class="mt-3 text-lg font-semibold uppercase tracking-wider">{{ s.title }}</h3>
+        <p class="mt-2 text-val-bone/80">{{ s.body }}</p>
+      </li>
+    }
+  </ol>
+</section>
+
+<section class="bg-val-ink/50 py-20" aria-labelledby="roles-title">
+  <div class="mx-auto max-w-7xl px-4">
+    <h2 id="roles-title" class="font-display text-4xl uppercase tracking-wide">Every role covered</h2>
+    <p class="mt-2 text-val-bone/80">Search by the role you're missing, or by the exact agent you need.</p>
+    @if (meta.meta.value(); as m) {
+      <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        @for (r of m.roles; track r.id) {
+          <li class="clip-angle flex flex-col bg-val-navy">
+            <img [src]="'/assets/roles/' + r.id + '.webp'" alt="" width="600" height="800" loading="lazy"
+                 class="aspect-3/4 w-full object-cover" />
+            <div class="flex flex-1 flex-col p-5">
+              <h3 class="font-display text-2xl uppercase tracking-wide">{{ r.name }}</h3>
+              <ul class="mt-3 flex flex-wrap gap-1.5" [attr.aria-label]="r.name + ' agents'">
+                @for (a of agentsFor(r.id); track a.id) {
+                  <li><img [src]="a.icon" [alt]="a.name" [title]="a.name" width="32" height="32" loading="lazy" class="size-8 bg-val-ink" /></li>
+                }
+              </ul>
+              <a routerLink="/players" [queryParams]="{ roles: r.id }"
+                 class="mt-auto pt-5 text-sm font-semibold uppercase tracking-wider text-val-red hover:underline">
+                Find {{ r.name }} players
+              </a>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</section>
+
+<section class="mx-auto max-w-7xl px-4 py-20 text-center" aria-labelledby="cta-title">
+  <h2 id="cta-title" class="font-display text-5xl uppercase tracking-wide">Your squad is one search away</h2>
+  <div class="mt-8 flex justify-center"><ng-container *ngTemplateOutlet="ctas" /></div>
+</section>

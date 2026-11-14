@@ -186,3 +186,5 @@ client/src/app/
 
 - Standalone components, signals for state, lazy-loaded feature routes.
 - Search filters are serialized to URL query params, so a search is shareable and back/forward works.
+- Landing art (Valorant fan art generated with Higgsfield, using official agent portraits and map splashes from valorant-api.com as references) lives in `client/public/assets/` as WebP: `hero/hero.webp` + `hero-960.webp`, `hero/og.jpg` (1200×630 crop for link previews) and `roles/{roleId}.webp`, keyed by the meta role id. The hero's slow pan/zoom is a CSS animation (`animate-hero-pan` in `styles.css`) behind `motion-safe:`, so reduced-motion users get the still.
+- Below `md`, the header nav collapses into a native `<details>` menu. A skip link jumps to `<main>`.

@@ -8,6 +8,12 @@
   --color-val-teal: #3ce0c8;
   --font-display: "Anton", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --animate-hero-pan: hero-pan 40s ease-in-out infinite alternate;
+
+  @keyframes hero-pan {
+    from { transform: scale(1.05) translateX(0); }
+    to { transform: scale(1.15) translateX(-2%); }
+  }
 }
 
 @layer base {
