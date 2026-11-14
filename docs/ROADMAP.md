@@ -39,10 +39,10 @@
 - [x] Integration tests: non-member can't read/send, blocked user can't DM
 
 ## M6: Landing + art
-- [ ] Higgsfield art on the Starter plan (200 credits total, no top-ups planned). Original characters only. Stills first: hero, 4 role cards, OG image (reuse a crop of the hero). Check each model's credit cost before generating, and keep a few credits back for one retry.
-- [ ] Hero motion: CSS (slow pan/zoom on the still). A looping Higgsfield video only if enough credits are left after the stills.
-- [ ] Landing page: hero, how it works, role showcase, CTA
-- [ ] `/privacy`, `/terms`
+- [x] Higgsfield art on the Starter plan (200 credits total, no top-ups planned). Real agents, abilities and maps as fan art (Legal Jibber Jabber), no Riot logos. Stills first: hero, 4 role cards, OG image (reuse a crop of the hero). Check each model's credit cost before generating, and keep a few credits back for one retry.
+- [x] Hero motion: CSS (slow pan/zoom on the still). A looping Higgsfield video only if enough credits are left after the stills.
+- [x] Landing page: hero, how it works, role showcase, CTA
+- [x] `/privacy`, `/terms`
 - [ ] Responsive + accessibility pass
 
 ## M7: Ship
