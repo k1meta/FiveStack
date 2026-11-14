@@ -132,6 +132,10 @@ Valid values come from `Meta/` (one source of truth) and are checked on write. S
 
 A post is **open** while `ClosedAt` is null, `ExpiresAt` (created + 3h) is in the future, and `SlotsOpen > 0`. Expiry is checked at query time, so no background job is needed. A host can have one open post at a time. `JoinRequest.Status` is `pending`, `accepted` or `declined`. Accepting runs two conditional updates in one transaction: pending → accepted, then `SlotsOpen - 1` where the post is still open. Concurrent accepts therefore can't oversell slots.
 
+### Demo data
+
+With config `Demo:Seed` on (Development, and the live demo via `Demo__Seed=true`), startup runs `Data/DemoSeed.cs`: 150 demo players from a fixed Bogus seed, every value picked from `Meta/`, inserted once (`IsDemo = true`, no password, so nobody can log in as one). The squads board tops up demo posts to 6 on each load, deleting expired ones, because posts expire after 3h and no background job exists. The API answers 409 to DMs and join requests aimed at demo players, and the UI shows a "Demo" chip and hides Message / Ask to join for them. Tests turn the flag off and seed explicitly in their own container.
+
 ## Authentication
 
 - **Email/password**: ASP.NET Core Identity's `MapIdentityApi` endpoints in cookie mode.

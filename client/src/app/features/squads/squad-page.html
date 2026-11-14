@@ -6,7 +6,7 @@
     <ng-template #player let-p>
       <div class="flex flex-wrap items-center justify-between gap-3 border border-white/10 bg-val-ink p-3">
         <a [routerLink]="['/u', p.id]" class="min-w-0 hover:text-val-red">
-          <span class="font-semibold">{{ p.riotName }}<span class="text-val-bone/40">#{{ p.riotTag }}</span></span>
+          <span class="font-semibold">{{ p.riotName }}<span class="text-val-bone/60">#{{ p.riotTag }}</span></span>
           @if (p.isDemo) { <span class="demo-chip" title="Sample player for the live demo">Demo</span> }
           <span class="block text-xs text-val-bone/60">{{ meta.names(m?.roles, p.roles) }}</span>
         </a>

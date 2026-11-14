@@ -59,7 +59,7 @@
       </div>
 
       <fieldset>
-        <legend class="field-label">Roles needed <span class="normal-case tracking-normal text-val-bone/50">none = any role</span></legend>
+        <legend class="field-label">Roles needed <span class="normal-case tracking-normal text-val-bone/60">none = any role</span></legend>
         <div class="mt-2 flex flex-wrap gap-2">
           @for (o of m.roles; track o.id) {
             <label class="chip">
@@ -72,7 +72,7 @@
 
       <details>
         <summary class="field-label cursor-pointer">
-          Agents wanted <span class="normal-case tracking-normal text-val-bone/50">optional, up to {{ maxAgents }}</span>
+          Agents wanted <span class="normal-case tracking-normal text-val-bone/60">optional, up to {{ maxAgents }}</span>
         </summary>
         <div class="mt-3 space-y-4">
           @for (role of m.roles; track role.id) {

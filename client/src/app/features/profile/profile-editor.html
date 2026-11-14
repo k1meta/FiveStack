@@ -4,7 +4,7 @@
     <ng-template #chips let-key="key" let-options="options" let-label="label" let-hint="hint" let-max="max">
       <fieldset>
         <legend class="field-label">
-          {{ label }} @if (hint) { <span class="normal-case tracking-normal text-val-bone/50">{{ hint }}</span> }
+          {{ label }} @if (hint) { <span class="normal-case tracking-normal text-val-bone/60">{{ hint }}</span> }
         </legend>
         <div class="mt-2 flex flex-wrap gap-2">
           @for (o of options; track o.id) {
@@ -36,7 +36,7 @@
     @if (wizard()) {
       <ol class="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold uppercase tracking-wider" aria-label="Steps">
         @for (s of steps; track s.title; let i = $index) {
-          <li [class]="i === step() ? 'text-val-red' : i < step() ? 'text-val-teal' : 'text-val-bone/40'"
+          <li [class]="i === step() ? 'text-val-red' : i < step() ? 'text-val-teal' : 'text-val-bone/60'"
               [attr.aria-current]="i === step() ? 'step' : null">
             {{ i + 1 }}. {{ s.title }}
           </li>
@@ -53,7 +53,7 @@
             <input formControlName="riotName" maxlength="16" autocomplete="off" class="field" />
             @if (showError('riotName')) { <span class="field-error">3-16 characters.</span> }
           </label>
-          <span class="pt-8 text-xl text-val-bone/50" aria-hidden="true">#</span>
+          <span class="pt-8 text-xl text-val-bone/60" aria-hidden="true">#</span>
           <label class="block w-28">
             <span class="field-label">Tag</span>
             <input formControlName="riotTag" maxlength="5" autocomplete="off" class="field" />
@@ -99,7 +99,7 @@
         @if (showError('roles')) { <span class="field-error">Pick at least one role.</span> }
 
         <div class="space-y-4">
-          <p class="field-label">Agents <span class="normal-case tracking-normal text-val-bone/50">up to 10</span></p>
+          <p class="field-label">Agents <span class="normal-case tracking-normal text-val-bone/60">up to 10</span></p>
           @for (role of m.roles; track role.id) {
             <ng-container *ngTemplateOutlet="chips; context: { key: 'agents', options: agentsFor(m, role.id), label: role.name, max: 10 }" />
           }
@@ -125,7 +125,7 @@
           <span class="field-label">Bio</span>
           <textarea formControlName="bio" rows="4" maxlength="300" class="field"
                     placeholder="What are you looking for? Comms style, goals, ..."></textarea>
-          <span class="mt-1 block text-right text-xs text-val-bone/50">{{ form.controls.bio.value.length }}/300</span>
+          <span class="mt-1 block text-right text-xs text-val-bone/60">{{ form.controls.bio.value.length }}/300</span>
         </label>
         @if (auth.user()?.discordUsername; as discord) {
           <label class="flex items-center gap-3">

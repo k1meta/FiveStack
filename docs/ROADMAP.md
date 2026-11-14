@@ -43,12 +43,12 @@
 - [x] Hero motion: CSS (slow pan/zoom on the still). A looping Higgsfield video only if enough credits are left after the stills.
 - [x] Landing page: hero, how it works, role showcase, CTA
 - [x] `/privacy`, `/terms`
-- [ ] Responsive + accessibility pass
+- [x] Responsive + accessibility pass (labels, alt text, focus ring checked; faded text raised to 5.4:1+)
 
 ## M7: Ship
 - [ ] Neon database + Render web service (Docker)
 - [ ] Production OAuth redirect URIs
-- [ ] Seed ~150 demo profiles (Bogus, `IsDemo` badge)
+- [x] Seed 150 demo profiles + 6 rolling demo squad posts (Bogus, `IsDemo` badge, no DMs/joins)
 - [ ] README screenshots + GIF, live link on resume
 
 ## Later (not in MVP)
