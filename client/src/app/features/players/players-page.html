@@ -2,7 +2,7 @@
   <header class="flex flex-wrap items-end justify-between gap-4">
     <div>
       <h1 class="font-display text-5xl uppercase tracking-wide">Find players</h1>
-      @if (results.value(); as r) {
+      @if (results.hasValue() && results.value(); as r) {
         <p class="mt-1 text-sm text-val-bone/60" aria-live="polite">{{ r.total }} {{ r.total === 1 ? 'player' : 'players' }}</p>
       }
     </div>
@@ -14,7 +14,7 @@
 
   <div class="mt-8 grid gap-8 md:grid-cols-[18rem_1fr]">
     <aside id="player-filters" class="space-y-6 md:block" [class.hidden]="!filtersOpen()" aria-label="Filters">
-      @if (meta.meta.value(); as m) {
+      @if (meta.meta.hasValue() && meta.meta.value(); as m) {
         <!-- Multi-select chips: native checkboxes, styled by the `chip` utility in styles.css -->
         <ng-template #chips let-key="key" let-options="options" let-label="label">
           <fieldset>
@@ -98,7 +98,7 @@
     </aside>
 
     <div>
-      @if (results.value(); as r) {
+      @if (results.hasValue() && results.value(); as r) {
         @let m = meta.meta.value();
         @if (r.items.length) {
           <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

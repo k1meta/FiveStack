@@ -1,0 +1,133 @@
+<section class="mx-auto max-w-7xl px-4 py-10">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="font-display text-5xl uppercase tracking-wide">Squads</h1>
+      @if (results.hasValue() && results.value(); as r) {
+        <p class="mt-1 text-sm text-val-bone/60" aria-live="polite">{{ r.total }} open {{ r.total === 1 ? 'squad' : 'squads' }}</p>
+      }
+    </div>
+    <div class="flex flex-wrap gap-3">
+      @if (mine.hasValue() && mine.value(); as s) {
+        <a [routerLink]="['/squads', s.id]" class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal">
+          Your squad
+        </a>
+      } @else {
+        <a routerLink="/squads/new" class="clip-angle bg-val-red px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:brightness-110">
+          Post a squad
+        </a>
+      }
+    </div>
+  </header>
+
+  @if (meta.meta.hasValue() && meta.meta.value(); as m) {
+    <form class="mt-8 flex flex-wrap items-end gap-4 border-b border-white/10 pb-6" aria-label="Filters" (submit)="$event.preventDefault()">
+      <label class="block w-40">
+        <span class="field-label">Region</span>
+        <select class="field" (change)="set({ region: $any($event.target).value, server: null })">
+          <option value="" [selected]="!get('region')">Any</option>
+          @for (r of m.regions; track r.id) { <option [value]="r.id" [selected]="get('region') === r.id">{{ r.name }}</option> }
+        </select>
+      </label>
+      @if (regionServers(m).length) {
+        <label class="block w-48">
+          <span class="field-label">Server</span>
+          <select class="field" (change)="set({ server: $any($event.target).value })">
+            <option value="" [selected]="!get('server')">Any</option>
+            @for (s of regionServers(m); track s.id) { <option [value]="s.id" [selected]="get('server') === s.id">{{ s.name }}</option> }
+          </select>
+        </label>
+      }
+      <label class="block w-40">
+        <span class="field-label">Mode</span>
+        <select class="field" (change)="set({ mode: $any($event.target).value })">
+          <option value="" [selected]="!get('mode')">Any</option>
+          @for (o of m.modes; track o.id) { <option [value]="o.id" [selected]="get('mode') === o.id">{{ o.name }}</option> }
+        </select>
+      </label>
+      <label class="block w-40">
+        <span class="field-label">Your rank</span>
+        <select class="field" (change)="set({ rank: $any($event.target).value })">
+          <option value="" [selected]="!get('rank')">Any</option>
+          @for (r of m.ranks; track r.tier) { <option [value]="r.tier" [selected]="get('rank') === '' + r.tier">{{ r.name }}</option> }
+        </select>
+      </label>
+      <fieldset>
+        <legend class="field-label">You play</legend>
+        <div class="mt-1 flex flex-wrap gap-2">
+          @for (o of m.roles; track o.id) {
+            <label class="chip">
+              <input type="checkbox" class="sr-only" [checked]="has('roles', o.id)" (change)="toggle('roles', o.id)" />
+              {{ o.name }}
+            </label>
+          }
+        </div>
+      </fieldset>
+      <label class="flex items-center gap-2 pb-2 text-sm font-semibold uppercase tracking-wider">
+        <input type="checkbox" class="size-4 accent-val-teal" [checked]="get('noMic') === 'true'"
+               (change)="set({ noMic: $any($event.target).checked ? 'true' : null })" />
+        No mic needed
+      </label>
+      @if (filtered()) {
+        <a routerLink="/squads" class="pb-2 text-sm font-semibold uppercase tracking-wider text-val-teal hover:underline">Clear</a>
+      }
+    </form>
+  }
+
+  <div class="mt-8">
+    @if (results.hasValue() && results.value(); as r) {
+      @let m = meta.meta.value();
+      @if (r.items.length) {
+        <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          @for (s of r.items; track s.id) {
+            <li>
+              <a [routerLink]="['/squads', s.id]" class="flex h-full flex-col border border-white/10 bg-val-ink p-4 hover:border-val-red">
+                <div class="flex items-start justify-between gap-2">
+                  <h2 class="font-semibold">{{ s.title }}</h2>
+                  <span class="shrink-0 text-xs text-val-bone/60">{{ timeLeft(s.expiresAt) }}</span>
+                </div>
+                <p class="mt-1 text-xs uppercase tracking-wider text-val-bone/60">
+                  {{ meta.name(m?.modes, s.mode) }} · {{ s.server ? meta.name(meta.servers(), s.server) : meta.name(m?.regions, s.region) }}
+                  @if (s.micRequired) { · Mic required }
+                </p>
+                <p class="mt-3 text-sm">
+                  <span class="font-semibold text-val-red">{{ s.slotsOpen }} {{ s.slotsOpen === 1 ? 'slot' : 'slots' }}</span>
+                  · {{ s.neededRoles.length ? meta.names(m?.roles, s.neededRoles) : 'Any role' }}
+                  · {{ rankRange(s) }}
+                </p>
+                @if (s.neededAgents.length) {
+                  <ul class="mt-3 flex gap-2" aria-label="Wanted agents">
+                    @for (id of s.neededAgents; track id) {
+                      @if (meta.agent(id); as a) {
+                        <li><img [src]="a.icon" [alt]="a.name" [title]="a.name" class="size-9 bg-val-navy" /></li>
+                      }
+                    }
+                  </ul>
+                }
+                <div class="mt-auto flex items-center justify-between gap-2 pt-4 text-sm">
+                  <span class="truncate">{{ s.host.riotName }}<span class="text-val-bone/40">#{{ s.host.riotTag }}</span></span>
+                  <app-rank-badge [tier]="s.host.rank" />
+                </div>
+              </a>
+            </li>
+          }
+        </ul>
+
+        @if (pages() > 1) {
+          <nav class="mt-8 flex items-center justify-center gap-4 text-sm font-semibold uppercase tracking-wider" aria-label="Pagination">
+            <button type="button" class="border border-white/20 px-4 py-2 hover:border-val-teal disabled:opacity-40"
+                    [disabled]="page() <= 1" (click)="goTo(page() - 1)">Prev</button>
+            <span class="text-val-bone/70">Page {{ page() }} of {{ pages() }}</span>
+            <button type="button" class="border border-white/20 px-4 py-2 hover:border-val-teal disabled:opacity-40"
+                    [disabled]="page() >= pages()" (click)="goTo(page() + 1)">Next</button>
+          </nav>
+        }
+      } @else {
+        <p class="text-val-bone/70">No open squads match. Loosen a filter, or post your own.</p>
+      }
+    } @else if (results.error()) {
+      <p class="text-val-red">Couldn't load squads. Try again in a moment.</p>
+    } @else {
+      <p class="text-val-bone/60">Loading…</p>
+    }
+  </div>
+</section>

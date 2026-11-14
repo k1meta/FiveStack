@@ -1,3 +1,4 @@
+using FiveStack.Api.Squads;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -10,6 +11,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     // Cookie-encryption keys live in Postgres so logins survive restarts and redeploys.
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+    public DbSet<SquadPost> SquadPosts => Set<SquadPost>();
+    public DbSet<JoinRequest> JoinRequests => Set<JoinRequest>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -24,5 +27,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.HasIndex(u => u.Modes).HasMethod("gin");
             e.HasIndex(u => u.PlayTimes).HasMethod("gin");
         });
+        b.Entity<SquadPost>(e =>
+        {
+            e.HasIndex(p => p.NeededRoles).HasMethod("gin");
+            e.HasIndex(p => p.ExpiresAt);
+        });
+        b.Entity<JoinRequest>().HasKey(r => new { r.PostId, r.UserId });
     }
 }

@@ -1,4 +1,4 @@
-@if (meta.meta.value(); as m) {
+@if (meta.meta.hasValue() && meta.meta.value(); as m) {
   <form [formGroup]="form" (ngSubmit)="save()" class="space-y-10" novalidate>
     <!-- Multi-select chips: native checkboxes, styled by the `chip` utility in styles.css -->
     <ng-template #chips let-key="key" let-options="options" let-label="label" let-hint="hint" let-max="max">

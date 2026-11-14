@@ -26,12 +26,14 @@
 - [x] Integration test: agent/role overlap + rank range
 
 ## M4: Squads
-- [ ] `SquadPost`, `JoinRequest`, expiry (3h)
-- [ ] Squads board + filters, create post form
-- [ ] Join request, accept/decline, accepted player added to the squad conversation
+- [x] `SquadPost`, `JoinRequest`, expiry (3h), one open post per host
+- [x] Squads board + filters synced to URL, create post form
+- [x] Join request, cancel, accept/decline (atomic slot count), squad page with roster + Discord
+- [x] Integration tests: board filters, one open post, accept until full, expiry
 
 ## M5: Chat
 - [ ] `ChatHub`, conversations, messages, unread counts
+- [ ] Squad conversation: host on post create, accepted player added on accept; push join requests instead of the 15s poll
 - [ ] Presence ("online now"), blocks, rate limits
 - [ ] Messages UI (list + thread), live updates
 - [ ] Integration tests: non-member can't read/send, blocked user can't DM
