@@ -1,0 +1,109 @@
+<section class="mx-auto max-w-3xl px-4 py-12">
+  <h1 class="font-display text-4xl uppercase tracking-wide">Post a squad</h1>
+  <p class="mt-2 text-val-bone/70">Your post stays up for 3 hours, or until you fill it or close it.</p>
+
+  @if (meta.meta.hasValue() && meta.meta.value(); as m) {
+    <form [formGroup]="form" (ngSubmit)="save()" class="mt-8 space-y-8" novalidate>
+      <label class="block">
+        <span class="field-label">Title</span>
+        <input formControlName="title" maxlength="60" autocomplete="off" class="field" placeholder="Need a controller for comp, chill vibes" />
+        @if (form.controls.title.invalid && form.controls.title.touched) { <span class="field-error">3-60 characters.</span> }
+      </label>
+
+      <div class="grid gap-4 sm:grid-cols-3">
+        <label class="block">
+          <span class="field-label">Mode</span>
+          <select formControlName="mode" class="field">
+            @for (o of m.modes; track o.id) { <option [value]="o.id">{{ o.name }}</option> }
+          </select>
+        </label>
+        <label class="block">
+          <span class="field-label">Region</span>
+          <select formControlName="region" class="field">
+            <option value="" disabled>Choose</option>
+            @for (r of m.regions; track r.id) { <option [value]="r.id">{{ r.name }}</option> }
+          </select>
+          @if (form.controls.region.invalid && form.controls.region.touched) { <span class="field-error">Pick a region.</span> }
+        </label>
+        <label class="block">
+          <span class="field-label">Server</span>
+          <select formControlName="server" class="field">
+            <option [ngValue]="null">Any</option>
+            @for (s of regionServers(m); track s.id) { <option [ngValue]="s.id">{{ s.name }}</option> }
+          </select>
+        </label>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-3">
+        <label class="block">
+          <span class="field-label">Rank from</span>
+          <select formControlName="rankMin" class="field">
+            <option [ngValue]="null">Any</option>
+            @for (r of m.ranks; track r.tier) { <option [ngValue]="r.tier">{{ r.name }}</option> }
+          </select>
+        </label>
+        <label class="block">
+          <span class="field-label">to</span>
+          <select formControlName="rankMax" class="field">
+            <option [ngValue]="null">Any</option>
+            @for (r of m.ranks; track r.tier) { <option [ngValue]="r.tier">{{ r.name }}</option> }
+          </select>
+          @if (form.hasError('rankOrder')) { <span class="field-error">Max rank is below min rank.</span> }
+        </label>
+        <label class="block">
+          <span class="field-label">Players needed</span>
+          <select formControlName="slotsOpen" class="field">
+            @for (n of [1, 2, 3, 4]; track n) { <option [ngValue]="n">{{ n }}</option> }
+          </select>
+        </label>
+      </div>
+
+      <fieldset>
+        <legend class="field-label">Roles needed <span class="normal-case tracking-normal text-val-bone/50">none = any role</span></legend>
+        <div class="mt-2 flex flex-wrap gap-2">
+          @for (o of m.roles; track o.id) {
+            <label class="chip">
+              <input type="checkbox" class="sr-only" [checked]="has('neededRoles', o.id)" (change)="toggle('neededRoles', o.id)" />
+              {{ o.name }}
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      <details>
+        <summary class="field-label cursor-pointer">
+          Agents wanted <span class="normal-case tracking-normal text-val-bone/50">optional, up to {{ maxAgents }}</span>
+        </summary>
+        <div class="mt-3 space-y-4">
+          @for (role of m.roles; track role.id) {
+            <fieldset>
+              <legend class="text-xs uppercase tracking-wider text-val-bone/60">{{ role.name }}</legend>
+              <div class="mt-2 flex flex-wrap gap-2">
+                @for (a of agentsFor(m, role.id); track a.id) {
+                  <label class="chip">
+                    <input type="checkbox" class="sr-only" [checked]="has('neededAgents', a.id)"
+                           [disabled]="!has('neededAgents', a.id) && form.controls.neededAgents.value.length >= maxAgents"
+                           (change)="toggle('neededAgents', a.id)" />
+                    <img [src]="a.icon" alt="" class="size-6" />
+                    {{ a.name }}
+                  </label>
+                }
+              </div>
+            </fieldset>
+          }
+        </div>
+      </details>
+
+      <label class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider">
+        <input type="checkbox" formControlName="micRequired" class="size-4 accent-val-teal" />
+        Mic required
+      </label>
+
+      @if (failure(); as f) { <p class="text-sm text-val-red" role="alert">{{ f }}</p> }
+      <button type="submit" [disabled]="busy()"
+              class="clip-angle bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110 disabled:opacity-50">
+        {{ busy() ? 'Posting…' : 'Post squad' }}
+      </button>
+    </form>
+  }
+</section>
