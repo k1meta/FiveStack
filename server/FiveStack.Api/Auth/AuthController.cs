@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace FiveStack.Api.Auth;
 
-public record MeDto(Guid Id, string? Email, string? DisplayName, string? DiscordUsername);
+public record MeDto(Guid Id, string? Email, string? DisplayName, string? DiscordUsername, bool Onboarded, IEnumerable<string> Logins);
 
 // Email/password endpoints (register, login, ...) come from MapIdentityApi in Program.cs.
 [ApiController]
@@ -22,7 +22,8 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
     {
         var u = await users.GetUserAsync(User);
         if (u is null) return Unauthorized();
-        return new MeDto(u.Id, u.Email, u.DisplayName, u.DiscordUsername);
+        var logins = (await users.GetLoginsAsync(u)).Select(l => l.LoginProvider);
+        return new MeDto(u.Id, u.Email, u.DisplayName, u.DiscordUsername, u.OnboardedAt is not null, logins);
     }
 
     [Authorize]
@@ -83,7 +84,7 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
 
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
         await signIn.SignInAsync(user, isPersistent: true, info.LoginProvider);
-        return Redirect(returnUrl);
+        return Redirect($"/onboarding?returnUrl={Uri.EscapeDataString(returnUrl)}"); // new account: set up the profile first
     }
 
     private async Task<IActionResult> Link(AppUser user, ExternalLoginInfo info, string returnUrl)
