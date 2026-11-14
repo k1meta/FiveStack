@@ -11,11 +11,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/profile/onboarding-page').then((m) => m.OnboardingPage),
   },
+  { path: 'players', loadComponent: () => import('./features/players/players-page').then((m) => m.PlayersPage) },
   { path: 'u/:id', loadComponent: () => import('./features/profile/profile-page').then((m) => m.ProfilePage) },
   {
     path: 'settings',
     canActivate: [authGuard],
     loadComponent: () => import('./features/settings/settings-page').then((m) => m.SettingsPage),
   },
-  { path: '**', redirectTo: '' }, // ponytail: players/squads land in M3-M4
+  { path: '**', redirectTo: '' }, // ponytail: squads land in M4
 ];

@@ -1,0 +1,160 @@
+<section class="mx-auto max-w-7xl px-4 py-10">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="font-display text-5xl uppercase tracking-wide">Find players</h1>
+      @if (results.value(); as r) {
+        <p class="mt-1 text-sm text-val-bone/60" aria-live="polite">{{ r.total }} {{ r.total === 1 ? 'player' : 'players' }}</p>
+      }
+    </div>
+    <button type="button" class="border border-white/20 px-4 py-2 text-sm font-semibold uppercase tracking-wider md:hidden"
+            [attr.aria-expanded]="filtersOpen()" aria-controls="player-filters" (click)="filtersOpen.set(!filtersOpen())">
+      Filters
+    </button>
+  </header>
+
+  <div class="mt-8 grid gap-8 md:grid-cols-[18rem_1fr]">
+    <aside id="player-filters" class="space-y-6 md:block" [class.hidden]="!filtersOpen()" aria-label="Filters">
+      @if (meta.meta.value(); as m) {
+        <!-- Multi-select chips: native checkboxes, styled by the `chip` utility in styles.css -->
+        <ng-template #chips let-key="key" let-options="options" let-label="label">
+          <fieldset>
+            <legend class="field-label">{{ label }}</legend>
+            <div class="mt-2 flex flex-wrap gap-2">
+              @for (o of options; track o.id) {
+                <label class="chip">
+                  <input type="checkbox" class="sr-only" [checked]="has(key, o.id)" (change)="toggle(key, o.id)" />
+                  @if (o.icon) { <img [src]="o.icon" alt="" class="size-6" /> }
+                  {{ o.name }}
+                </label>
+              }
+            </div>
+          </fieldset>
+        </ng-template>
+
+        <label class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider">
+          <input type="checkbox" class="size-4 accent-val-teal" [checked]="get('online') === 'true'"
+                 (change)="set({ online: $any($event.target).checked ? 'true' : null })" />
+          Online now
+        </label>
+
+        <label class="block">
+          <span class="field-label">Region</span>
+          <select class="field" (change)="set({ region: $any($event.target).value, servers: null })">
+            <option value="" [selected]="!get('region')">Any</option>
+            @for (r of m.regions; track r.id) { <option [value]="r.id" [selected]="get('region') === r.id">{{ r.name }}</option> }
+          </select>
+        </label>
+        @if (regionServers(m).length) {
+          <ng-container *ngTemplateOutlet="chips; context: { key: 'servers', options: regionServers(m), label: 'Servers' }" />
+        }
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block">
+            <span class="field-label">Rank from</span>
+            <select class="field" (change)="set({ rankMin: $any($event.target).value })">
+              <option value="" [selected]="!get('rankMin')">Any</option>
+              @for (r of m.ranks; track r.tier) { <option [value]="r.tier" [selected]="get('rankMin') === '' + r.tier">{{ r.name }}</option> }
+            </select>
+          </label>
+          <label class="block">
+            <span class="field-label">to</span>
+            <select class="field" (change)="set({ rankMax: $any($event.target).value })">
+              <option value="" [selected]="!get('rankMax')">Any</option>
+              @for (r of m.ranks; track r.tier) { <option [value]="r.tier" [selected]="get('rankMax') === '' + r.tier">{{ r.name }}</option> }
+            </select>
+          </label>
+        </div>
+
+        <ng-container *ngTemplateOutlet="chips; context: { key: 'roles', options: m.roles, label: 'Roles' }" />
+
+        <details [open]="!!get('agents')">
+          <summary class="field-label cursor-pointer">Agents</summary>
+          <div class="mt-3 space-y-4">
+            @for (role of m.roles; track role.id) {
+              <ng-container *ngTemplateOutlet="chips; context: { key: 'agents', options: agentsFor(m, role.id), label: role.name }" />
+            }
+          </div>
+        </details>
+
+        <ng-container *ngTemplateOutlet="chips; context: { key: 'languages', options: m.languages, label: 'Languages' }" />
+
+        @for (f of [{ key: 'platform', label: 'Platform', options: m.platforms }, { key: 'mic', label: 'Mic', options: m.mic }, { key: 'playstyle', label: 'Playstyle', options: m.playstyles }]; track f.key) {
+          <label class="block">
+            <span class="field-label">{{ f.label }}</span>
+            <select class="field" (change)="pick(f.key, $any($event.target).value)">
+              <option value="" [selected]="!get(f.key)">Any</option>
+              @for (o of f.options; track o.id) { <option [value]="o.id" [selected]="get(f.key) === o.id">{{ o.name }}</option> }
+            </select>
+          </label>
+        }
+
+        <ng-container *ngTemplateOutlet="chips; context: { key: 'modes', options: m.modes, label: 'Modes' }" />
+        <ng-container *ngTemplateOutlet="chips; context: { key: 'playTimes', options: m.playTimes, label: 'Usually online' }" />
+
+        @if (filtered()) {
+          <a routerLink="/players" class="inline-block text-sm font-semibold uppercase tracking-wider text-val-teal hover:underline">Clear filters</a>
+        }
+      }
+    </aside>
+
+    <div>
+      @if (results.value(); as r) {
+        @let m = meta.meta.value();
+        @if (r.items.length) {
+          <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            @for (p of r.items; track p.id) {
+              <li>
+                <a [routerLink]="['/u', p.id]" class="block h-full border border-white/10 bg-val-ink p-4 hover:border-val-red">
+                  <div class="flex items-start justify-between gap-2">
+                    <h2 class="truncate font-semibold">
+                      {{ p.riotName }}<span class="text-val-bone/40">#{{ p.riotTag }}</span>
+                    </h2>
+                    @if (p.online) {
+                      <span class="flex shrink-0 items-center gap-1 text-xs text-val-teal">
+                        <span class="size-2 rounded-full bg-val-teal" aria-hidden="true"></span>Online
+                      </span>
+                    }
+                  </div>
+                  <p class="mt-1 text-xs uppercase tracking-wider text-val-bone/60">
+                    {{ meta.name(m?.regions, p.region) }}
+                    @if (p.mic) { · {{ meta.name(m?.mic, p.mic) }} }
+                  </p>
+                  <div class="mt-3"><app-rank-badge [tier]="p.rank" /></div>
+                  <p class="mt-2 text-sm">{{ meta.names(m?.roles, p.roles) }}</p>
+                  @if (p.agents.length) {
+                    <ul class="mt-3 flex gap-2" aria-label="Agents">
+                      @for (id of p.agents.slice(0, 3); track id) {
+                        @if (meta.agent(id); as a) {
+                          <li><img [src]="a.icon" [alt]="a.name" [title]="a.name" class="size-10 bg-val-navy" /></li>
+                        }
+                      }
+                      @if (p.agents.length > 3) {
+                        <li class="self-center text-xs text-val-bone/60">+{{ p.agents.length - 3 }}</li>
+                      }
+                    </ul>
+                  }
+                </a>
+              </li>
+            }
+          </ul>
+
+          @if (pages() > 1) {
+            <nav class="mt-8 flex items-center justify-center gap-4 text-sm font-semibold uppercase tracking-wider" aria-label="Pagination">
+              <button type="button" class="border border-white/20 px-4 py-2 hover:border-val-teal disabled:opacity-40"
+                      [disabled]="page() <= 1" (click)="goTo(page() - 1)">Prev</button>
+              <span class="text-val-bone/70">Page {{ page() }} of {{ pages() }}</span>
+              <button type="button" class="border border-white/20 px-4 py-2 hover:border-val-teal disabled:opacity-40"
+                      [disabled]="page() >= pages()" (click)="goTo(page() + 1)">Next</button>
+            </nav>
+          }
+        } @else {
+          <p class="text-val-bone/70">No players match. Loosen a filter.</p>
+        }
+      } @else if (results.error()) {
+        <p class="text-val-red">Couldn't load players. Try again in a moment.</p>
+      } @else {
+        <p class="text-val-bone/60">Loading…</p>
+      }
+    </div>
+  </div>
+</section>
