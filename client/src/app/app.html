@@ -4,6 +4,12 @@
     <div class="flex items-center gap-5 text-sm font-semibold uppercase tracking-wider">
       <a routerLink="/players" routerLinkActive="text-val-red" class="hover:text-val-red">Players</a>
       <a routerLink="/squads" routerLinkActive="text-val-red" class="hover:text-val-red">Squads</a>
+      @if (auth.user(); as u) {
+        <span class="normal-case tracking-normal text-val-bone/80">{{ u.displayName ?? u.email }}</span>
+        <button type="button" (click)="logout()" class="uppercase hover:text-val-red">Log out</button>
+      } @else {
+        <a routerLink="/login" class="clip-angle bg-val-red px-4 py-2 hover:brightness-110">Log in</a>
+      }
     </div>
   </nav>
 </header>

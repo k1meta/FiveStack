@@ -1,0 +1,49 @@
+<section class="mx-auto max-w-sm px-4 py-16">
+  <h1 class="font-display text-4xl uppercase tracking-wide">
+    {{ mode() === 'login' ? 'Log in' : 'Create account' }}
+  </h1>
+
+  @if (message(); as msg) {
+    <p role="alert" class="mt-4 border-l-4 border-val-red bg-val-red/10 px-3 py-2 text-sm">{{ msg }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 space-y-4">
+    <label class="block">
+      <span class="text-sm font-semibold uppercase tracking-wider">Email</span>
+      <input type="email" formControlName="email" autocomplete="email"
+             class="mt-1 w-full border border-white/20 bg-val-ink px-3 py-2 focus:border-val-teal" />
+    </label>
+    <label class="block">
+      <span class="text-sm font-semibold uppercase tracking-wider">Password</span>
+      <input type="password" formControlName="password"
+             [attr.autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'"
+             class="mt-1 w-full border border-white/20 bg-val-ink px-3 py-2 focus:border-val-teal" />
+      @if (mode() === 'register') {
+        <span class="mt-1 block text-xs text-val-bone/60">6+ characters with an uppercase letter, a lowercase letter, a digit and a symbol.</span>
+      }
+    </label>
+    <button type="submit" [disabled]="form.invalid || busy()"
+            class="clip-angle w-full bg-val-red py-3 font-semibold uppercase tracking-wider hover:brightness-110 disabled:opacity-50">
+      {{ mode() === 'login' ? 'Log in' : 'Sign up' }}
+    </button>
+  </form>
+
+  @if (auth.providers().length) {
+    <div class="my-6 flex items-center gap-3 text-xs uppercase text-val-bone/50">
+      <span class="h-px flex-1 bg-white/10"></span>or<span class="h-px flex-1 bg-white/10"></span>
+    </div>
+    @for (p of auth.providers(); track p) {
+      <a [href]="externalUrl(p)" class="mb-3 block border border-white/20 py-3 text-center font-semibold hover:border-val-teal">
+        Continue with {{ p }}
+      </a>
+    }
+  }
+
+  <p class="mt-6 text-sm text-val-bone/70">
+    @if (mode() === 'login') {
+      No account? <a routerLink="/register" [queryParams]="{ returnUrl: returnUrl() }" class="text-val-teal hover:underline">Sign up</a>
+    } @else {
+      Already have one? <a routerLink="/login" [queryParams]="{ returnUrl: returnUrl() }" class="text-val-teal hover:underline">Log in</a>
+    }
+  </p>
+</section>

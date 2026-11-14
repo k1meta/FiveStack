@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Mvc.Testing;
-
 namespace FiveStack.Api.Tests;
 
-public class HealthTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+[Collection("api")]
+public class HealthTests(ApiFactory factory)
 {
     [Fact]
     public async Task Health_returns_ok()
