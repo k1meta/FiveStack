@@ -18,5 +18,7 @@ WORKDIR /app
 COPY --from=server /app ./
 COPY --from=client /src/client/dist/client/browser ./wwwroot
 ENV ASPNETCORE_HTTP_PORTS=8080
+# Render terminates TLS; trust X-Forwarded-* so OAuth builds https:// redirect URIs.
+ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "FiveStack.Api.dll"]

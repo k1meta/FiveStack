@@ -7,11 +7,11 @@
 - [x] README, architecture, roadmap, deployment, contributing, LICENSE
 
 ## M1: Auth
-- [ ] `AppUser`, `AppDbContext`, first EF migration
-- [ ] Identity cookie auth (`MapIdentityApi`) + logout
-- [ ] Google + Discord external login, Discord account linking
-- [ ] Data Protection keys persisted in Postgres
-- [ ] Login / register pages, `AuthService`, `authGuard`
+- [x] `AppUser`, `AppDbContext`, first EF migration
+- [x] Identity cookie auth (`MapIdentityApi`) + logout
+- [x] Google + Discord external login, Discord account linking
+- [x] Data Protection keys persisted in Postgres
+- [x] Login / register pages, `AuthService`, `authGuard`
 
 ## M2: Profiles
 - [ ] `Meta/GameData.cs` + `agents.json` (from valorant-api.com), `GET /api/meta`
