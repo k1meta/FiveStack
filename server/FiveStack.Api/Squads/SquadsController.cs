@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
+using FiveStack.Api.Chat;
 using FiveStack.Api.Data;
 using FiveStack.Api.Meta;
 using FiveStack.Api.Profiles;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace FiveStack.Api.Squads;
@@ -45,13 +47,16 @@ public record SquadDto(
 
 public record SquadPage(SquadDto[] Items, int Total, int Page, int PageSize);
 public record RequestDto(PublicProfileDto Player, DateTimeOffset CreatedAt);
-/// <summary>`Requests` (pending) only for the host; `MyStatus` only for a player who asked to join.</summary>
-public record SquadDetailDto(SquadDto Post, PublicProfileDto[] Roster, RequestDto[] Requests, string? MyStatus);
+/// <summary>
+/// `Requests` (pending) only for the host; `MyStatus` only for a player who asked to join;
+/// `ConversationId` (the squad chat) only for the host and accepted players.
+/// </summary>
+public record SquadDetailDto(SquadDto Post, PublicProfileDto[] Roster, RequestDto[] Requests, string? MyStatus, Guid? ConversationId);
 public record Decision([Required] string Status);
 
 [ApiController]
 [Route("api/squads")]
-public class SquadsController(AppDbContext db, UserManager<AppUser> users) : ControllerBase
+public class SquadsController(AppDbContext db, UserManager<AppUser> users, IHubContext<ChatHub> hub) : ControllerBase
 {
     const int PageSize = 24;
     public static readonly TimeSpan Lifetime = TimeSpan.FromHours(3);
@@ -99,6 +104,10 @@ public class SquadsController(AppDbContext db, UserManager<AppUser> users) : Con
         if (post is null) return NotFound();
 
         var me = MeId;
+        var member = post.HostId == me || post.Requests.Any(r => r.UserId == me && r.Status == JoinRequest.Accepted);
+        var conversationId = member
+            ? await db.Conversations.Where(c => c.SquadPostId == id).Select(c => (Guid?)c.Id).FirstOrDefaultAsync()
+            : null;
         var requests = post.HostId == me
             ? post.Requests.Where(r => r.Status == JoinRequest.Pending).OrderBy(r => r.CreatedAt)
                 .Select(r => new RequestDto(ProfilesController.ToPublic(r.User), r.CreatedAt)).ToArray()
@@ -107,7 +116,8 @@ public class SquadsController(AppDbContext db, UserManager<AppUser> users) : Con
             ToDto(post),
             [.. post.Requests.Where(r => r.Status == JoinRequest.Accepted).Select(r => ProfilesController.ToPublic(r.User))],
             requests,
-            post.Requests.FirstOrDefault(r => r.UserId == me)?.Status);
+            post.Requests.FirstOrDefault(r => r.UserId == me)?.Status,
+            conversationId);
     }
 
     [Authorize]
@@ -133,6 +143,8 @@ public class SquadsController(AppDbContext db, UserManager<AppUser> users) : Con
             CreatedAt = now, ExpiresAt = now + Lifetime,
         };
         db.SquadPosts.Add(post);
+        // The squad chat starts with the host; each accepted player is added in Decide.
+        db.Conversations.Add(new Conversation { SquadPost = post, CreatedAt = now, Members = [new() { UserId = me, LastReadAt = now }] });
         await db.SaveChangesAsync();
         return CreatedAtAction(nameof(Get), new { id = post.Id }, new { post.Id });
     }
@@ -166,6 +178,7 @@ public class SquadsController(AppDbContext db, UserManager<AppUser> users) : Con
         {
             return Problem("You already asked to join.", statusCode: 409);
         }
+        await SquadChanged(post.HostId, id);
         return NoContent();
     }
 
@@ -176,7 +189,9 @@ public class SquadsController(AppDbContext db, UserManager<AppUser> users) : Con
     {
         var n = await db.JoinRequests.Where(r => r.PostId == id && r.UserId == MeId && r.Status == JoinRequest.Pending)
             .ExecuteDeleteAsync();
-        return n == 0 ? NotFound() : NoContent();
+        if (n == 0) return NotFound();
+        await SquadChanged(await db.SquadPosts.Where(p => p.Id == id).Select(p => p.HostId).FirstAsync(), id);
+        return NoContent();
     }
 
     /// <summary>The host accepts or declines a pending request. Accepting takes one open slot.</summary>
@@ -199,10 +214,21 @@ public class SquadsController(AppDbContext db, UserManager<AppUser> users) : Con
             var took = await db.SquadPosts.Where(p => p.Id == id).Where(IsOpen(DateTimeOffset.UtcNow))
                 .ExecuteUpdateAsync(x => x.SetProperty(p => p.SlotsOpen, p => p.SlotsOpen - 1));
             if (took == 0) return Problem("This squad is closed, full or expired.", statusCode: 409); // tx rolls back on dispose
+
+            // Posts from before M5 have no chat, hence the null check.
+            if (await db.Conversations.Where(c => c.SquadPostId == id).Select(c => (Guid?)c.Id).FirstOrDefaultAsync() is { } chat)
+            {
+                db.ConversationMembers.Add(new ConversationMember { ConversationId = chat, UserId = userId, LastReadAt = DateTimeOffset.UtcNow });
+                await db.SaveChangesAsync();
+            }
         }
         await tx.CommitAsync();
+        await SquadChanged(userId, id);
         return NoContent();
     }
+
+    /// <summary>Tells a user's open tabs to reload this squad (replaces polling).</summary>
+    Task SquadChanged(Guid userId, Guid postId) => hub.Clients.User(userId.ToString()).SendAsync("SquadChanged", postId);
 
     async Task<IActionResult?> Onboarded() =>
         await db.Users.AnyAsync(u => u.Id == MeId && u.OnboardedAt != null)

@@ -97,7 +97,9 @@ erDiagram
   }
   Conversation {
     uuid Id PK
-    enum Type
+    uuid SquadPostId FK "unique, squad chats only"
+    string DmKey "unique, DMs only"
+    timestamptz CreatedAt
   }
   ConversationMember {
     uuid ConversationId PK
@@ -154,17 +156,20 @@ sequenceDiagram
 
 ## Real-time chat (SignalR)
 
-- `ChatHub` at `/hubs/chat` requires `[Authorize]` and uses the same auth cookie.
-- On connect, the connection joins one SignalR group per conversation the user belongs to.
-- `SendMessage(conversationId, body)`: membership check, block check, rate limit, persist, then broadcast `MessageReceived` to the group.
-- Unread count = messages newer than `ConversationMember.LastReadAt`.
-- Presence: an in-memory map of userId to connection count. This works only with a single instance. Scaling out requires a Redis backplane and Redis-backed presence.
-- Until the hub exists (M5), "online now" comes from `LastActiveAt`: middleware stamps it at most once a minute on authenticated API calls, and a player counts as online for 5 minutes after.
+- A conversation is a **DM** (`DmKey` = both user ids, smaller first, unique so a pair has one DM) or a **squad chat** (`SquadPostId`). A squad chat is created with its post and starts with the host. Accepting a join request adds the player in the same transaction that takes the slot.
+- **Messages are sent over REST** (`POST /api/conversations/{id}/messages`): membership check, block check (DMs), the `messages` rate limit, persist, then push. One code path for validation and limits, and the integration tests need only HttpClient.
+- `ChatHub` at `/hubs/chat` is **push-only**. It requires `[Authorize]` and uses the same auth cookie. The server pushes to users, not groups: `Clients.Users(memberIds)`, keyed by the `NameIdentifier` claim. A conversation has at most 5 members and the send already loads them, so there is no group membership to keep in sync.
+  - `MessageReceived(message)` goes to every member, the sender included, so the sender's other tabs update too.
+  - `SquadChanged(postId)` goes to the host on a new or cancelled join request and to the player when the host answers. It replaces the squad page's 15s poll.
+- Unread count = messages from others newer than `ConversationMember.LastReadAt`. Opening a thread, and sending into it, moves `LastReadAt`.
+- Blocks are one row per blocker and work both ways for DMs: neither player can start or send a DM. Squad chats ignore blocks.
+- Presence: an in-memory map of userId to hub connection count. A player is "online now" while connected, **or** for 5 minutes after an authenticated API call (`LastActiveAt`, stamped at most once a minute by middleware). `LastActiveAt` also drives the player finder's "recently active" sort. The in-memory map works only with a single instance. Scaling out requires a Redis backplane and Redis-backed presence.
+- The client lazy-loads `@microsoft/signalr` on sign-in, so signed-out visitors don't download it.
 
 ## Security checklist
 
-- Membership is checked on every conversation read and send. Blocks are enforced on DM creation and send.
-- Rate limiting (`AddRateLimiter`) applies to auth, message send, and squad creation.
+- Membership is checked on every conversation read, send and mark-read; a non-member gets the same 404 as a missing conversation. Blocks are enforced on DM creation and send.
+- Rate limiting (`AddRateLimiter`) applies to auth, squad creation, message send (30/min per user) and starting a DM (30/hour per user).
 - Input lengths are capped with DataAnnotations. Angular escapes all bound text.
 - `SameSite=Lax` cookie + JSON-only request bodies mitigate CSRF.
 - `UseForwardedHeaders` is enabled so OAuth redirect URIs use `https` behind Render's proxy.

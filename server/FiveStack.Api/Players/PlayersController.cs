@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using FiveStack.Api.Chat;
 using FiveStack.Api.Data;
 using FiveStack.Api.Profiles;
 using Microsoft.AspNetCore.Identity;
@@ -57,7 +58,8 @@ public class PlayersController(AppDbContext db, UserManager<AppUser> users) : Co
         if (f.Online)
         {
             var since = DateTimeOffset.UtcNow - ProfilesController.OnlineWindow;
-            q = q.Where(u => u.LastActiveAt > since);
+            var live = Presence.Online();
+            q = q.Where(u => u.LastActiveAt > since || live.Contains(u.Id));
         }
 
         var page = Math.Clamp(f.Page, 1, 10_000); // upper bound keeps Skip() from overflowing

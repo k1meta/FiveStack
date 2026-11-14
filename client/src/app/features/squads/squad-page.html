@@ -92,7 +92,7 @@
                   }
                 </ul>
               } @else {
-                <p class="mt-1 text-sm text-val-bone/60">No requests yet. This page checks for new ones every 15 seconds.</p>
+                <p class="mt-1 text-sm text-val-bone/60">No requests yet. New ones show up here live.</p>
               }
             </div>
             <button type="button" [disabled]="busy()" (click)="close()"
@@ -122,7 +122,7 @@
                 Cancel request
               </button>
             }
-            @case ('accepted') { <p class="text-val-teal">You're in. Add the squad on Discord below.</p> }
+            @case ('accepted') { <p class="text-val-teal">You're in. Say hi in the squad chat, or add the squad on Discord below.</p> }
             @case ('declined') { <p class="text-val-bone/60">The host passed on this one. Try another squad.</p> }
             @default {
               @if (s.open) {
@@ -136,7 +136,15 @@
         }
 
         <div>
-          <h2 class="field-label text-val-bone/60">Squad</h2>
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="field-label text-val-bone/60">Squad</h2>
+            @if (d.conversationId; as chat) {
+              <a [routerLink]="['/messages', chat]"
+                 class="clip-angle bg-val-red px-4 py-1.5 text-xs font-semibold uppercase tracking-wider hover:brightness-110">
+                Open squad chat
+              </a>
+            }
+          </div>
           <ul class="mt-2 space-y-2">
             <li>
               <p class="mb-1 text-xs uppercase tracking-wider text-val-red">Host</p>

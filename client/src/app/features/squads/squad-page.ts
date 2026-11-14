@@ -1,9 +1,11 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Observable, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
+import { ChatService } from '../../core/chat.service';
 import { MetaService } from '../../core/meta.service';
 import { errorMessage } from '../../core/util';
 import { RankBadge } from '../../shared/rank-badge';
@@ -17,6 +19,8 @@ export interface SquadDetail {
   requests: { player: PublicProfile; createdAt: string }[];
   /** The viewer's own request: 'pending' | 'accepted' | 'declined', or null. */
   myStatus: string | null;
+  /** The squad chat; only for the host and accepted players. */
+  conversationId: string | null;
 }
 
 /** One squad at /squads/:id: details, roster, join/cancel, and the host's request queue. */
@@ -40,9 +44,10 @@ export class SquadPage {
   protected copied = signal<string | null>(null);
 
   constructor() {
-    // ponytail: polling so the host sees requests and joiners see answers; M5's hub can push these instead.
-    const timer = setInterval(() => this.squad.reload(), 15_000);
-    inject(DestroyRef).onDestroy(() => clearInterval(timer));
+    // The hub pushes SquadChanged to the host on a new/cancelled request and to a player when the host answers.
+    inject(ChatService).squadChanged.pipe(takeUntilDestroyed()).subscribe((postId) => {
+      if (postId === this.id()) this.squad.reload();
+    });
   }
 
   protected join() {

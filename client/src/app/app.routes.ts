@@ -20,6 +20,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/squads/squad-form').then((m) => m.SquadForm),
   },
   { path: 'squads/:id', loadComponent: () => import('./features/squads/squad-page').then((m) => m.SquadPage) },
+  ...['messages', 'messages/:id'].map((path) => ({
+    path,
+    canActivate: [authGuard, onboardedGuard],
+    loadComponent: () => import('./features/chat/messages-page').then((m) => m.MessagesPage),
+  })),
   {
     path: 'settings',
     canActivate: [authGuard],
