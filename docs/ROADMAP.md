@@ -21,9 +21,9 @@
 - [x] Settings: edit profile, linked accounts, delete account
 
 ## M3: Player finder
-- [ ] `GET /api/players` with all filters + GIN indexes
-- [ ] Filter sidebar synced to URL, player cards, pagination, "online now"
-- [ ] Integration test: agent/role overlap + rank range
+- [x] `GET /api/players` with all filters + GIN indexes
+- [x] Filter sidebar synced to URL, player cards, pagination, "online now"
+- [x] Integration test: agent/role overlap + rank range
 
 ## M4: Squads
 - [ ] `SquadPost`, `JoinRequest`, expiry (3h)
@@ -37,7 +37,8 @@
 - [ ] Integration tests: non-member can't read/send, blocked user can't DM
 
 ## M6: Landing + art
-- [ ] Higgsfield hero still + looping video, 4 role cards, OG image (original characters only)
+- [ ] Higgsfield art on the Starter plan (200 credits total, no top-ups planned). Original characters only. Stills first: hero, 4 role cards, OG image (reuse a crop of the hero). Check each model's credit cost before generating, and keep a few credits back for one retry.
+- [ ] Hero motion: CSS (slow pan/zoom on the still). A looping Higgsfield video only if enough credits are left after the stills.
 - [ ] Landing page: hero, how it works, role showcase, CTA
 - [ ] `/privacy`, `/terms`
 - [ ] Responsive + accessibility pass
