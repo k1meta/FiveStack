@@ -16,3 +16,7 @@ Thumbs.db
 
 # Local AI assistant notes
 CLAUDE.md
+.env.local
+.env.*.local
+.neon
+node_modules/

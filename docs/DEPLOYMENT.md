@@ -4,12 +4,19 @@ Production setup costs **$0/month**: one Docker web service on **Render** (free)
 
 ## 1. Database: Neon
 
-1. Create a project at <https://neon.tech> (pick the region closest to your Render region).
-2. Copy the **direct** connection string (not the `-pooler` host: the pooler runs PgBouncer in transaction mode, which doesn't suit EF migrations) and convert it to Npgsql format:
-   ```
-   Host=<host>;Database=<db>;Username=<user>;Password=<password>;SSL Mode=Require
-   ```
-3. Migrations run automatically on app startup.
+The repo is linked to a Neon project (`neon.ts`, `.neon`). With the Neon CLI (`npm i -g neon`):
+
+```bash
+neon login
+neon deploy      # applies neon.ts and pulls DATABASE_URL + DATABASE_URL_UNPOOLED into .env.local (gitignored)
+```
+
+The app reads both URLs directly (`PgUrl` in `Program.cs` turns them into Npgsql connection strings):
+
+- `DATABASE_URL` (pooled, `-pooler` host) for app traffic.
+- `DATABASE_URL_UNPOOLED` (direct) for the startup migrations and demo seed. PgBouncer's transaction mode doesn't suit EF migrations.
+
+Migrations run automatically on app startup. To run the API locally against Neon: `set -a; . ./.env.local; set +a`, then `dotnet run` in `server/FiveStack.Api`.
 
 ## 2. App: Render
 
@@ -20,7 +27,8 @@ Production setup costs **$0/month**: one Docker web service on **Render** (free)
    | Key | Value |
    |---|---|
    | `ASPNETCORE_ENVIRONMENT` | `Production` |
-   | `ConnectionStrings__Default` | Neon connection string |
+   | `DATABASE_URL` | pooled Neon URL (from `.env.local`) |
+   | `DATABASE_URL_UNPOOLED` | direct Neon URL (from `.env.local`) |
    | `Authentication__Google__ClientId` / `__ClientSecret` | from Google Cloud |
    | `Authentication__Discord__ClientId` / `__ClientSecret` | from Discord Developer Portal |
    | `Demo__Seed` | `true`: seeds 150 demo players and keeps 6 demo squad posts open |

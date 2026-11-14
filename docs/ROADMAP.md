@@ -46,7 +46,8 @@
 - [x] Responsive + accessibility pass (labels, alt text, focus ring checked; faded text raised to 5.4:1+)
 
 ## M7: Ship
-- [ ] Neon database + Render web service (Docker)
+- [x] Neon database (project linked, migrated, demo data seeded)
+- [ ] Render web service (Docker)
 - [ ] Production OAuth redirect URIs
 - [x] Seed 150 demo profiles + 6 rolling demo squad posts (Bogus, `IsDemo` badge, no DMs/joins)
 - [ ] README screenshots + GIF, live link on resume

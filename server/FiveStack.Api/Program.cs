@@ -6,6 +6,7 @@ using FiveStack.Api.Meta;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +15,10 @@ var config = builder.Configuration;
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(config.GetConnectionString("Default")));
+// Neon (`neon env pull`, or Render env vars) gives postgres:// URLs: pooled DATABASE_URL for app traffic,
+// direct DATABASE_URL_UNPOOLED for migrations. Without them, ConnectionStrings:Default (local Docker Postgres).
+var connectionString = PgUrl(config["DATABASE_URL"]) ?? config.GetConnectionString("Default");
+builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connectionString));
 
 // Cookie auth via Identity's API endpoints. Unauthenticated API calls get 401, not a redirect.
 builder.Services.AddIdentityApiEndpoints<AppUser>(o => o.User.RequireUniqueEmail = true)
@@ -71,6 +75,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (PgUrl(config["DATABASE_URL_UNPOOLED"]) is { } direct) db.Database.SetConnectionString(direct); // PgBouncer can't run migrations
     db.Database.Migrate();
     if (config.GetValue<bool>("Demo:Seed"))
     {
@@ -110,5 +115,20 @@ app.MapHub<ChatHub>("/hubs/chat");
 app.MapFallbackToFile("index.html"); // client-side routes
 
 app.Run();
+
+// postgresql://user:pass@host[:port]/db?... to an Npgsql connection string. Npgsql doesn't parse URLs.
+// ponytail: SSL + channel binding are always required (Neon's URLs ask for both); parse the query if another host needs less.
+static string? PgUrl(string? url)
+{
+    if (string.IsNullOrWhiteSpace(url)) return null;
+    var u = new Uri(url);
+    var user = u.UserInfo.Split(':', 2);
+    return new NpgsqlConnectionStringBuilder
+    {
+        Host = u.Host, Port = u.Port > 0 ? u.Port : 5432, Database = u.AbsolutePath.Trim('/'),
+        Username = Uri.UnescapeDataString(user[0]), Password = user.Length > 1 ? Uri.UnescapeDataString(user[1]) : null,
+        SslMode = SslMode.Require, ChannelBinding = ChannelBinding.Require,
+    }.ConnectionString;
+}
 
 public partial class Program; // exposed for WebApplicationFactory in tests
