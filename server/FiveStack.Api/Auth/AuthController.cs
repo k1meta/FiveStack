@@ -64,7 +64,11 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
         if (current is not null) return await Link(current, info, returnUrl);
 
         var result = await signIn.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: true);
-        if (result.Succeeded) return Redirect(returnUrl);
+        if (result.Succeeded)
+        {
+            var existing = await users.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+            return Redirect(existing?.OnboardedAt is null ? Onboarding(returnUrl) : returnUrl);
+        }
         if (result.IsLockedOut || result.IsNotAllowed) return Redirect("/login?error=not-allowed");
 
         var email = info.Principal.FindFirstValue(ClaimTypes.Email);
@@ -84,7 +88,7 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
 
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
         await signIn.SignInAsync(user, isPersistent: true, info.LoginProvider);
-        return Redirect($"/onboarding?returnUrl={Uri.EscapeDataString(returnUrl)}"); // new account: set up the profile first
+        return Redirect(Onboarding(returnUrl));
     }
 
     private async Task<IActionResult> Link(AppUser user, ExternalLoginInfo info, string returnUrl)
@@ -104,6 +108,9 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
         user.DiscordId = info.ProviderKey;
         user.DiscordUsername = Truncate(info.Principal.FindFirstValue(ClaimTypes.Name), 64);
     }
+
+    // No profile yet: set it up first, then continue to where the user was going.
+    private static string Onboarding(string returnUrl) => $"/onboarding?returnUrl={Uri.EscapeDataString(returnUrl)}";
 
     private static string? Truncate(string? s, int max) => s is { Length: > 0 } && s.Length > max ? s[..max] : s;
 }

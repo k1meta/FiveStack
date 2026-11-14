@@ -45,7 +45,7 @@ public static class GameData
             new("ap", "Asia-Pacific", [O("hong-kong", "Hong Kong"), O("singapore", "Singapore"), O("tokyo", "Tokyo"), O("sydney", "Sydney"), O("mumbai", "Mumbai")]),
             new("kr", "Korea", [O("seoul", "Seoul")]),
         ],
-        Platforms: [O("pc", "PC"), O("console", "Console")],
+        Platforms: [O("pc", "PC"), O("playstation", "PlayStation"), O("xbox", "Xbox")],
         Ranks: Ranks,
         Roles: [O("duelist", "Duelist"), O("initiator", "Initiator"), O("controller", "Controller"), O("sentinel", "Sentinel")],
         Agents: Agents,
