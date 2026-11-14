@@ -14,11 +14,11 @@
 - [x] Login / register pages, `AuthService`, `authGuard`
 
 ## M2: Profiles
-- [ ] `Meta/GameData.cs` + `agents.json` (from valorant-api.com), `GET /api/meta`
-- [ ] `GET/PUT /api/me/profile` with validation against meta
-- [ ] Onboarding wizard (Riot ID, region/servers, platform, ranks, roles, agents, languages, mic, modes, playstyle, play times, bio)
-- [ ] Public profile page with "Copy Discord" + "View on tracker.gg"
-- [ ] Settings: edit profile, linked accounts, delete account
+- [x] `Meta/GameData.cs` + `agents.json` (from valorant-api.com), `GET /api/meta`
+- [x] `GET/PUT /api/me/profile` with validation against meta
+- [x] Onboarding wizard (Riot ID, region/servers, platform, ranks, roles, agents, languages, mic, modes, playstyle, play times, bio)
+- [x] Public profile page with "Copy Discord" + "View on tracker.gg"
+- [x] Settings: edit profile, linked accounts, delete account
 
 ## M3: Player finder
 - [ ] `GET /api/players` with all filters + GIN indexes

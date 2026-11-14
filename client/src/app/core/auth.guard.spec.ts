@@ -21,7 +21,7 @@ describe('authGuard', () => {
   });
 
   it('lets signed-in users through', () => {
-    TestBed.inject(AuthService).user.set({ id: '1', email: 'a@b.c', displayName: null, discordUsername: null });
+    TestBed.inject(AuthService).user.set({ id: '1', email: 'a@b.c', displayName: null, discordUsername: null, onboarded: false, logins: [] });
     expect(run()).toBe(true);
   });
 });

@@ -1,0 +1,47 @@
+<section class="mx-auto max-w-3xl space-y-16 px-4 py-12">
+  <div>
+    <h1 class="font-display text-4xl uppercase tracking-wide">Settings</h1>
+    <app-profile-editor class="mt-8 block" />
+  </div>
+
+  <div class="space-y-4">
+    <h2 class="font-display text-2xl uppercase tracking-wide">Linked accounts</h2>
+    @if (error() === 'link-failed') {
+      <p role="alert" class="border-l-4 border-val-red bg-val-red/10 px-3 py-2 text-sm">
+        Couldn't link that account. It may already belong to another FiveStack user.
+      </p>
+    }
+    <ul class="space-y-2">
+      @for (p of auth.providers(); track p) {
+        <li class="flex items-center justify-between border border-white/10 px-4 py-3">
+          <span class="font-semibold">{{ p }}</span>
+          @if (auth.user()?.logins?.includes(p)) {
+            <span class="text-sm text-val-teal">
+              Linked @if (p === 'Discord' && auth.user()?.discordUsername) { as {{ auth.user()?.discordUsername }} }
+            </span>
+          } @else {
+            <a [href]="linkUrl(p)" class="text-sm font-semibold uppercase tracking-wider text-val-teal hover:underline">Link</a>
+          }
+        </li>
+      } @empty {
+        <li class="text-sm text-val-bone/60">No external providers are configured.</li>
+      }
+    </ul>
+  </div>
+
+  <div class="space-y-4 border border-val-red/40 p-6">
+    <h2 class="font-display text-2xl uppercase tracking-wide text-val-red">Delete account</h2>
+    <p class="text-sm text-val-bone/70">This permanently removes your profile and login. It can't be undone.</p>
+    <label class="block max-w-xs">
+      <span class="field-label">Type DELETE to confirm</span>
+      <input class="field" autocomplete="off" [value]="confirmText()" (input)="confirmText.set($any($event.target).value)" />
+    </label>
+    @if (deleteFailure(); as msg) {
+      <p role="alert" class="text-sm text-val-red">{{ msg }}</p>
+    }
+    <button type="button" [disabled]="confirmText() !== 'DELETE' || deleting()" (click)="deleteAccount()"
+            class="bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110 disabled:opacity-40">
+      Delete my account
+    </button>
+  </div>
+</section>

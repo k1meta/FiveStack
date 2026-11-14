@@ -16,6 +16,24 @@
   :focus-visible { @apply outline-2 outline-offset-2 outline-val-teal; }
 }
 
+/* Toggle chip: a <label> wrapping a visually hidden checkbox/radio */
+@utility chip {
+  @apply inline-flex cursor-pointer items-center gap-2 border border-white/20 px-3 py-1.5 text-sm select-none hover:border-val-bone/60;
+  @apply has-checked:border-val-red has-checked:bg-val-red/20 has-focus-visible:outline-2 has-focus-visible:outline-val-teal;
+  @apply has-disabled:cursor-not-allowed has-disabled:opacity-40;
+}
+
+/* Shared form field look */
+@utility field {
+  @apply mt-1 w-full border border-white/20 bg-val-ink px-3 py-2 focus:border-val-teal;
+}
+@utility field-label {
+  @apply text-sm font-semibold uppercase tracking-wider;
+}
+@utility field-error {
+  @apply mt-1 block text-xs text-val-red;
+}
+
 /* Angled corner used on buttons/cards */
 @utility clip-angle {
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));

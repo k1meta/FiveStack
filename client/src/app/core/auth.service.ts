@@ -7,6 +7,10 @@ export interface Me {
   email: string | null;
   displayName: string | null;
   discordUsername: string | null;
+  /** Profile saved at least once. */
+  onboarded: boolean;
+  /** Linked external providers, e.g. ['Discord']. */
+  logins: string[];
 }
 
 /** Session state. The auth cookie is HttpOnly, so `/api/auth/me` is the source of truth. */
