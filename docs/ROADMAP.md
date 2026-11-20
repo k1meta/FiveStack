@@ -62,14 +62,15 @@
 - [x] Custom domain (five-stack.dev), Resend domain verification, production env vars, contact address via Cloudflare Email Routing
 - [x] TOTP two-factor authentication (Settings setup with QR + recovery codes; password and Google/Discord sign-ins)
 
-## M9: Auth UX (next)
-- [ ] Google and Discord icons on the "Continue with …" buttons (login, register, Settings > Linked accounts)
-- [ ] Show/hide password toggle on login, register and reset-password
-- [ ] "Confirm password" field on register and reset-password
-- [ ] Review password storage and hashing (where hashes live, algorithm and work factor, policy)
+## M9: Auth UX
+- [x] Google and Discord icons on the "Continue with …" buttons (login, register, Settings > Linked accounts)
+- [x] Show/hide password toggle on login, register and reset-password
+- [x] "Confirm password" field on register and reset-password
+- [x] Review password storage and hashing (where hashes live, algorithm and work factor, policy): documented in ARCHITECTURE.md, Identity defaults kept
 
 ## Later (not in MVP)
 - Riot Sign On (RSO) rank verification (requires a Riot production API key)
+- NIST SP 800-63B password policy (longer minimum, no composition rules) + breached-password check (Have I Been Pwned range API)
 - Report user / moderation queue
 - "Quick match" compatibility scoring
 - Redis SignalR backplane (only if running more than one instance)

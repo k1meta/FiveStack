@@ -14,7 +14,9 @@
     <ul class="space-y-2">
       @for (p of auth.providers(); track p) {
         <li class="flex items-center justify-between border border-white/10 px-4 py-3">
-          <span class="font-semibold">{{ p }}</span>
+          <span class="flex items-center gap-3 font-semibold"
+            ><app-provider-icon [provider]="p" />{{ p }}</span
+          >
           @if (auth.user()?.logins?.includes(p)) {
             <span class="text-sm text-val-teal">
               Linked

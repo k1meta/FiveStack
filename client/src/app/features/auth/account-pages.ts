@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
-import { errorMessage } from '../../core/util';
+import { errorMessage, matchPasswords } from '../../core/util';
 
 // Pages the account emails link to. The emails carry the userId/code (or email/code) as query params,
 // bound here with withComponentInputBinding.
@@ -156,17 +156,43 @@ export class ForgotPasswordPage {
         </p>
       }
       <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 space-y-4">
+        <div>
+          <label for="password" class="text-sm font-semibold uppercase tracking-wider"
+            >New password</label
+          >
+          <div class="relative mt-1">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+              aria-describedby="password-hint"
+              class="w-full border border-white/20 bg-val-ink px-3 py-2 pr-16 focus:border-val-teal"
+            />
+            <button
+              type="button"
+              (click)="showPassword.set(!showPassword())"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+              class="absolute inset-y-0 right-0 px-3 text-xs font-semibold uppercase tracking-wider text-val-teal hover:underline"
+            >
+              {{ showPassword() ? 'Hide' : 'Show' }}
+            </button>
+          </div>
+          <span id="password-hint" class="mt-1 block text-xs text-val-bone/60"
+            >6+ characters with an uppercase letter, a lowercase letter, a digit and a symbol.</span
+          >
+        </div>
         <label class="block">
-          <span class="text-sm font-semibold uppercase tracking-wider">New password</span>
+          <span class="text-sm font-semibold uppercase tracking-wider">Confirm password</span>
           <input
-            type="password"
-            formControlName="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="confirm"
             autocomplete="new-password"
             class="${field}"
           />
-          <span class="mt-1 block text-xs text-val-bone/60"
-            >6+ characters with an uppercase letter, a lowercase letter, a digit and a symbol.</span
-          >
+          @if (form.hasError('mismatch') && form.controls.confirm.dirty) {
+            <span class="field-error">Passwords don't match.</span>
+          }
         </label>
         <button type="submit" [disabled]="form.invalid || busy()" class="${button}">
           Save password
@@ -181,9 +207,14 @@ export class ResetPasswordPage {
   email = input<string>();
   code = input<string>();
 
-  protected form = inject(FormBuilder).nonNullable.group({
-    password: ['', [Validators.required, Validators.minLength(6)]],
-  });
+  protected form = inject(FormBuilder).nonNullable.group(
+    {
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirm: [''],
+    },
+    { validators: matchPasswords },
+  );
+  protected showPassword = signal(false);
   protected busy = signal(false);
   protected failure = signal<string | null>(null);
   protected expired = signal(false);
