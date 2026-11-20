@@ -10,9 +10,15 @@
 ![SignalR](https://img.shields.io/badge/SignalR-realtime-512BD4)
 ![CI](https://github.com/k1meta/FiveStack/actions/workflows/ci.yml/badge.svg)
 
-**Live demo:** _coming soon_ · **API docs:** `/scalar` on the live site
+**Live demo:** [fivestack-nn1w.onrender.com](https://fivestack-nn1w.onrender.com) · **API docs:** `/scalar` on the live site
 
-<!-- TODO(M7): hero screenshot + 20s GIF of search → squad → chat -->
+![FiveStack landing page](docs/media/hero.png)
+
+![Filtering players, opening a profile, then browsing the squads board](docs/media/demo.gif)
+
+| Player finder | Squads board |
+|---|---|
+| ![Player finder filtered to North America controllers](docs/media/players.png) | ![Squads board with open LFG posts](docs/media/squads.png) |
 
 ## Features
 

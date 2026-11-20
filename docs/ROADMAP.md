@@ -47,10 +47,11 @@
 
 ## M7: Ship
 - [x] Neon database (project linked, migrated, demo data seeded)
-- [ ] Render web service (Docker)
-- [ ] Production OAuth redirect URIs
+- [x] Render web service (Docker), Frankfurt, deploys after CI passes
+- [x] Production OAuth redirect URIs (Google + Discord)
 - [x] Seed 150 demo profiles + 6 rolling demo squad posts (Bogus, `IsDemo` badge, no DMs/joins)
-- [ ] README screenshots + GIF, live link on resume
+- [x] README screenshots + GIF, live link
+- [ ] Live link on resume
 
 ## Later (not in MVP)
 - Riot Sign On (RSO) rank verification (requires a Riot production API key)
