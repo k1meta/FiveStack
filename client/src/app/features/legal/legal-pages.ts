@@ -34,6 +34,10 @@ const prose =
       </li>
       <li>Squad posts, join requests, chat messages and the players you block.</li>
       <li>When you were last active, used for "online now" and sorting.</li>
+      <li>
+        If you turn on two-factor authentication: your authenticator key and the recovery codes you
+        haven't used yet.
+      </li>
     </ul>
 
     <h2>Cookies</h2>

@@ -5,10 +5,11 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { errorMessage } from '../../core/util';
 import { ProfileEditor } from '../profile/profile-editor';
+import { TwoFactorSettings } from './two-factor-settings';
 
 @Component({
   selector: 'app-settings-page',
-  imports: [ProfileEditor],
+  imports: [ProfileEditor, TwoFactorSettings],
   templateUrl: './settings-page.html',
 })
 export class SettingsPage {
