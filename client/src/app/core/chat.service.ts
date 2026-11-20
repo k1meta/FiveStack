@@ -70,7 +70,7 @@ export class ChatService {
 
   markRead(id: string) {
     this.conversations.update((list) => list.map((c) => (c.id === id ? { ...c, unread: 0 } : c)));
-    this.http.post(`/api/conversations/${id}/read`, null).subscribe({ error: () => {} });
+    this.http.post(`/api/conversations/${id}/read`, null).subscribe({ error: () => { /* best effort: the badge is already cleared locally */ } });
   }
 
   private async start() {

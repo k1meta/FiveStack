@@ -32,6 +32,8 @@
         Menu
         @if (chat.unread()) { <span class="size-2 bg-val-red" aria-label="unread messages"></span> }
       </summary>
+      <!-- Delegated close: links and the button inside are the focusable targets, and Enter on them fires click too. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
       <div (click)="menu.open = false"
            class="absolute right-0 mt-2 flex w-56 flex-col items-start gap-4 border border-white/10 bg-val-navy p-4 text-sm font-semibold uppercase tracking-wider shadow-lg">
         <ng-container *ngTemplateOutlet="links" />
