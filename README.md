@@ -10,7 +10,7 @@
 ![SignalR](https://img.shields.io/badge/SignalR-realtime-512BD4)
 ![CI](https://github.com/k1meta/FiveStack/actions/workflows/ci.yml/badge.svg)
 
-**Live demo:** [fivestack-nn1w.onrender.com](https://fivestack-nn1w.onrender.com) · **API docs:** `/scalar` on the live site
+**Live demo:** [five-stack.dev](https://five-stack.dev) · **API docs:** `/scalar` on the live site
 
 ![FiveStack landing page](docs/media/hero.png)
 
