@@ -50,6 +50,10 @@ const prose =
         served by FiveStack itself.
       </li>
       <li>The app is hosted on Render and the database on Neon.</li>
+      <li>
+        Grafana Cloud stores the app's technical logs and performance metrics (request paths,
+        timings, errors) for up to 14 days. They contain no IP addresses, emails or message text.
+      </li>
     </ul>
     <p>We don't sell or share your data with anyone else.</p>
 

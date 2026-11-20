@@ -1,5 +1,6 @@
 # Dev: `docker compose up -d` starts Postgres only; run the API and client with `dotnet run` / `ng serve`.
 # Full stack (production image, used by the E2E tests): `docker compose --profile app up -d --build`, then http://localhost:8080.
+# With telemetry: `OTEL_EXPORTER_OTLP_ENDPOINT=http://otel:4317 docker compose --profile app --profile otel up -d --build`.
 services:
   db:
     image: postgres:17-alpine
@@ -25,9 +26,17 @@ services:
       # Every request comes from one IP here (the E2E runner), so lift the per-IP limits.
       RateLimits__AuthPerMinute: "1000"
       RateLimits__GlobalPerMinute: "10000"
+      # Telemetry is off unless set, e.g. OTEL_EXPORTER_OTLP_ENDPOINT=http://otel:4317 with the otel profile below.
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
     depends_on:
       db:
         condition: service_healthy
+
+  # Local Grafana + Prometheus + Tempo + Loki behind one OTLP endpoint. Grafana on http://localhost:3000.
+  otel:
+    profiles: [otel]
+    image: grafana/otel-lgtm:0.40.0
+    ports: ["3000:3000", "4317:4317", "4318:4318"]
 
 volumes:
   pgdata:

@@ -126,6 +126,8 @@ public class ChatController(AppDbContext db, UserManager<AppUser> users, IHubCon
         await db.ConversationMembers.Where(m => m.ConversationId == id && m.UserId == me) // your own message is read
             .ExecuteUpdateAsync(s => s.SetProperty(m => m.LastReadAt, msg.SentAt));
 
+        AppMetrics.MessagesSent.Add(1, new KeyValuePair<string, object?>("kind", c.DmKey is null ? "squad" : "dm"));
+
         var name = await db.Users.Where(u => u.Id == me).Select(u => u.RiotName).FirstAsync() ?? "";
         var dto = new MessageDto(msg.Id, id, me, name, msg.Body, msg.SentAt);
         await hub.Clients.Users(c.Members.Select(m => m.ToString())).SendAsync("MessageReceived", dto);

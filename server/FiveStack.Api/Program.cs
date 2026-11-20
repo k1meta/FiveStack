@@ -1,12 +1,19 @@
 using System.Security.Claims;
 using System.Threading.RateLimiting;
+using FiveStack.Api;
 using FiveStack.Api.Chat;
 using FiveStack.Api.Data;
 using FiveStack.Api.Meta;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -84,6 +91,32 @@ builder.Services.AddRateLimiter(o =>
 });
 builder.Services.AddSignalR();
 
+// OpenTelemetry traces, metrics and logs, exported over OTLP. Off unless OTEL_EXPORTER_OTLP_ENDPOINT is set
+// (Grafana Cloud in production, `docker compose --profile otel` locally), so dev and tests don't pay for it.
+// The exporter reads the standard OTEL_* env vars (endpoint, headers, protocol).
+if (config["OTEL_EXPORTER_OTLP_ENDPOINT"] is { Length: > 0 })
+    builder.Services.AddOpenTelemetry()
+        .ConfigureResource(r => r.AddService("fivestack"))
+        .WithTracing(t => t
+            .AddAspNetCoreInstrumentation(o => o.Filter = ctx => !ctx.Request.Path.StartsWithSegments("/api/health"))
+            .AddHttpClientInstrumentation() // OAuth token exchange, outgoing email
+            .AddNpgsql())
+        .WithMetrics(m => m
+            .AddAspNetCoreInstrumentation() // request duration/count per route, Kestrel connections
+            .AddHttpClientInstrumentation()
+            .AddMeter("Microsoft.AspNetCore.Http.Connections", "Microsoft.AspNetCore.RateLimiting",
+                "Microsoft.AspNetCore.Identity", "System.Runtime", "Npgsql", AppMetrics.Meter.Name))
+        .WithLogging(_ => { }, o => o.IncludeScopes = true)
+        .UseOtlpExporter();
+
+// One log line per API request (method, path, status, duration). Health pings are skipped below.
+builder.Services.AddHttpLogging(o =>
+{
+    o.LoggingFields = HttpLoggingFields.RequestMethod | HttpLoggingFields.RequestPath
+        | HttpLoggingFields.ResponseStatusCode | HttpLoggingFields.Duration;
+    o.CombineLogs = true;
+});
+
 var app = builder.Build();
 
 // ponytail: migrate on startup, fine for one instance; move to a release step if we ever scale out.
@@ -129,6 +162,8 @@ app.MapScalarApiReference(); // API docs at /scalar
 
 app.UseDefaultFiles();
 app.UseStaticFiles(); // Angular build is copied into wwwroot by the Dockerfile
+app.UseWhen(ctx => ctx.Request.Path.StartsWithSegments("/api") && !ctx.Request.Path.StartsWithSegments("/api/health"),
+    a => a.UseHttpLogging());
 app.UseRateLimiter();
 
 // "Online now" heartbeat: stamp LastActiveAt at most once a minute per signed-in user.

@@ -32,9 +32,22 @@ Migrations run automatically on app startup. To run the API locally against Neon
    | `Authentication__Google__ClientId` / `__ClientSecret` | from Google Cloud |
    | `Authentication__Discord__ClientId` / `__ClientSecret` | from Discord Developer Portal |
    | `Demo__Seed` | `true`: seeds 150 demo players and keeps 6 demo squad posts open |
+   | `OTEL_EXPORTER_OTLP_ENDPOINT` / `_HEADERS` / `_PROTOCOL` | from Grafana Cloud (see below). Leave unset to turn telemetry off. |
 
 4. Settings > Build & Deploy > Auto-Deploy: **After CI Checks Pass**. Render then deploys `main` only after the GitHub Actions CI run is green.
 5. Set the GitHub Actions **variable** `APP_URL` (e.g. `https://fivestack.onrender.com`) so `keep-warm.yml` pings the app every 10 minutes. Render's free tier sleeps after 15 minutes of inactivity. One always-on service uses ~744 of the 750 free hours per month.
+
+## 3. Observability: Grafana Cloud
+
+1. Create a free Grafana Cloud stack (14-day retention, well within the free limits at this traffic).
+2. **Connections > OpenTelemetry (OTLP)**: generate a token, then copy the environment variables it shows into Render:
+   - `OTEL_EXPORTER_OTLP_ENDPOINT` (e.g. `https://otlp-gateway-prod-eu-west-2.grafana.net/otlp`)
+   - `OTEL_EXPORTER_OTLP_HEADERS` (`Authorization=Basic%20<base64 of instanceId:token>`)
+   - `OTEL_EXPORTER_OTLP_PROTOCOL` = `http/protobuf`
+3. **Dashboards > New > Import**: upload `docs/observability/grafana-dashboard.json` and pick the `grafanacloud-…-prom` datasource.
+4. Explore > Tempo shows request traces with SQL spans. Loki has the JSON logs (`{service_name="fivestack"}`).
+
+Try it locally first: `OTEL_EXPORTER_OTLP_ENDPOINT=http://otel:4317 docker compose --profile app --profile otel up -d --build`, then open Grafana at http://localhost:3000 (admin/admin) and import the same JSON.
 
 ## OAuth apps
 
@@ -67,7 +80,7 @@ OAuth buttons are hidden when a provider has no ClientId configured, so the app 
 
 ## Gotchas
 
-- **Forwarded headers:** Render terminates TLS. The app enables `UseForwardedHeaders` so OAuth builds `https://` redirect URIs.
+- **Forwarded headers:** Render terminates TLS. `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` (set in the Dockerfile) trusts `X-Forwarded-For/Proto`, so OAuth builds `https://` redirect URIs and the per-IP rate limits see the visitor's IP. To check the IP part after a deploy, send 21 bad logins in a minute from one network: the last one should get 429. A login from another network (e.g. your phone on mobile data) right after should still get 401, not 429. If it gets 429 too, every visitor shares one partition: set `ForwardedHeadersOptions.ForwardLimit` to the number of proxies in front of the app.
 - **Data Protection keys** are stored in Postgres. Without that, every restart would invalidate all login cookies.
 - **Cold starts:** without the keep-warm ping, the first request after idle takes ~30–60s.
 - **Custom domain (optional):** add it in Render and update both OAuth redirect URIs.
