@@ -7,20 +7,8 @@ namespace FiveStack.Api.Tests;
 [Collection("api")]
 public class PlayerSearchTests(ApiFactory factory)
 {
-    private async Task<(HttpClient Client, string Id)> Player(string email, object? profile)
-    {
-        var client = factory.CreateClient();
-        var creds = new { email, password = "Passw0rd!" };
-        (await client.PostAsJsonAsync("/api/auth/register", creds)).EnsureSuccessStatusCode();
-        (await client.PostAsJsonAsync("/api/auth/login?useCookies=true", creds)).EnsureSuccessStatusCode();
-        if (profile is not null)
-        {
-            var res = await client.PutAsJsonAsync("/api/me/profile", profile);
-            Assert.True(res.IsSuccessStatusCode, await res.Content.ReadAsStringAsync());
-        }
-        var id = (await client.GetFromJsonAsync<JsonElement>("/api/auth/me")).GetProperty("id").GetString()!;
-        return (client, id);
-    }
+    private Task<(HttpClient Client, string Id)> Player(string email, object? profile) =>
+        factory.Player(email, onboard: profile is not null, profile: profile);
 
     private static object Kr(string name, int rank, string role, string agent) => new
     {

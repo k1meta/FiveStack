@@ -18,14 +18,7 @@ public class ProfileTests(ApiFactory factory)
         playTimes = new[] { "weekday-evening" }, bio = "IGL, chill comms.", showDiscord = false,
     };
 
-    private async Task<HttpClient> SignedIn(string email)
-    {
-        var client = factory.CreateClient();
-        var creds = new { email, password = "Passw0rd!" };
-        (await client.PostAsJsonAsync("/api/auth/register", creds)).EnsureSuccessStatusCode();
-        (await client.PostAsJsonAsync("/api/auth/login?useCookies=true", creds)).EnsureSuccessStatusCode();
-        return client;
-    }
+    private async Task<HttpClient> SignedIn(string email) => (await factory.Player(email, onboard: false)).Client;
 
     [Fact]
     public async Task Meta_lists_agents_and_ranks()

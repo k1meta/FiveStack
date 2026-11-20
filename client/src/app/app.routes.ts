@@ -5,6 +5,8 @@ const authPage = () => import('./features/auth/auth-page').then((m) => m.AuthPag
 
 const legal = () => import('./features/legal/legal-pages');
 
+const account = () => import('./features/auth/account-pages');
+
 export const routes: Routes = [
   {
     path: '',
@@ -15,6 +17,9 @@ export const routes: Routes = [
   { path: 'terms', loadComponent: () => legal().then((m) => m.TermsPage) },
   { path: 'login', loadComponent: authPage, data: { mode: 'login' } },
   { path: 'register', loadComponent: authPage, data: { mode: 'register' } },
+  { path: 'confirm-email', loadComponent: () => account().then((m) => m.ConfirmEmailPage) },
+  { path: 'forgot-password', loadComponent: () => account().then((m) => m.ForgotPasswordPage) },
+  { path: 'reset-password', loadComponent: () => account().then((m) => m.ResetPasswordPage) },
   {
     path: 'onboarding',
     canActivate: [authGuard],

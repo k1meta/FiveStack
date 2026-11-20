@@ -6,6 +6,16 @@ export function safeReturnUrl(url: string | undefined) {
 }
 
 /**
+ * The `detail` of a failed sign-in. Identity's login answers 401 with "Failed", "NotAllowed" (email not confirmed),
+ * "LockedOut" or "RequiresTwoFactor".
+ */
+export function problemDetail(e: unknown): string | null {
+  return e instanceof HttpErrorResponse && typeof e.error?.detail === 'string'
+    ? e.error.detail
+    : null;
+}
+
+/**
  * Readable text for a failed API call. ASP.NET returns ValidationProblemDetails: { errors: { field: ["..."] } },
  * or ProblemDetails with a `detail` sentence for 403/409.
  */

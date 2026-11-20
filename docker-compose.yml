@@ -23,6 +23,8 @@ services:
     environment:
       ConnectionStrings__Default: Host=db;Port=5432;Database=fivestack;Username=fivestack;Password=fivestack
       Demo__Seed: "true"
+      App__PublicUrl: http://localhost:8080
+      Auth__RequireConfirmedEmail: "false" # no inbox here; integration tests cover the email flows
       # Every request comes from one IP here (the E2E runner), so lift the per-IP limits.
       RateLimits__AuthPerMinute: "1000"
       RateLimits__GlobalPerMinute: "10000"

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { problemDetail } from './util';
 
 export interface Me {
   id: string;
@@ -36,9 +37,20 @@ export class AuthService {
     this.user.set(await firstValueFrom(this.http.get<Me>('/api/auth/me')));
   }
 
-  async register(email: string, password: string) {
+  /** Creates the account and signs in, unless the server first wants the emailed link confirmed. */
+  async register(email: string, password: string): Promise<'signed-in' | 'confirm-email'> {
     await firstValueFrom(this.http.post('/api/auth/register', { email, password }));
-    await this.login(email, password);
+    try {
+      await this.login(email, password);
+      return 'signed-in';
+    } catch (e) {
+      if (problemDetail(e) === 'NotAllowed') return 'confirm-email';
+      throw e;
+    }
+  }
+
+  resendConfirmation(email: string) {
+    return firstValueFrom(this.http.post('/api/auth/resendConfirmationEmail', { email }));
   }
 
   async logout() {

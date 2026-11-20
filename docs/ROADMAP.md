@@ -58,7 +58,8 @@
 - [x] Browser security: security headers + CSP, HSTS, self-hosted fonts
 - [x] CI gates: format, lint, warnings as errors, migration drift, coverage, Docker build, Playwright E2E, Dependabot, CodeQL
 - [x] Observability: OpenTelemetry traces/metrics/logs to Grafana Cloud, domain metrics, JSON logs
-- [ ] Custom domain, email confirmation + password reset (Resend)
+- [x] Email confirmation + password reset (Resend), host-header-safe links, verified provider emails only
+- [ ] Custom domain + Resend domain verification + production env vars (manual, see DEPLOYMENT.md)
 - [ ] TOTP two-factor authentication
 
 ## Later (not in MVP)
