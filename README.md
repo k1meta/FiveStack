@@ -10,7 +10,7 @@
 ![SignalR](https://img.shields.io/badge/SignalR-realtime-512BD4)
 ![CI](https://github.com/k1meta/FiveStack/actions/workflows/ci.yml/badge.svg)
 
-**Live demo:** [fivestack-nn1w.onrender.com](https://fivestack-nn1w.onrender.com) · **API docs:** `/scalar` on the live site
+**Live demo:** [five-stack.dev](https://five-stack.dev) · **API docs:** `/scalar` on the live site
 
 ![FiveStack landing page](docs/media/hero.png)
 
@@ -22,7 +22,7 @@
 
 ## Features
 
-- **Sign up your way:** email + password (with email confirmation and password reset), or one click with **Google** or **Discord**.
+- **Sign up your way:** email + password (with email confirmation and password reset), or one click with **Google** or **Discord**. Optional **two-factor authentication** with an authenticator app.
 - **Rich player profiles:** Riot ID, region & preferred servers, platform (PC / PlayStation / Xbox), current & peak rank, roles, agent pool, languages, mic, game modes, playstyle, play times.
 - **Player finder:** filter by any profile field, including *"plays Omen or Viper"* and *"Controller main, Plat to Diamond, EU Frankfurt, has mic"*. Filters live in the URL, so searches are shareable.
 - **Squads board:** post an LFG listing ("2/5, need Controller + Sentinel"). Players request to join, and the host accepts them into the squad chat. Posts expire automatically.

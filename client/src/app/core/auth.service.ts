@@ -14,6 +14,12 @@ export interface Me {
   logins: string[];
 }
 
+/** The second factor sent with a password login when 2FA is on. */
+export interface SecondFactor {
+  twoFactorCode?: string;
+  twoFactorRecoveryCode?: string;
+}
+
 /** Session state. The auth cookie is HttpOnly, so `/api/auth/me` is the source of truth. */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -32,8 +38,17 @@ export class AuthService {
     this.providers.set(providers);
   }
 
-  async login(email: string, password: string) {
-    await firstValueFrom(this.http.post('/api/auth/login?useCookies=true', { email, password }));
+  /** Fails with 401 `RequiresTwoFactor` when 2FA is on and no second factor was given. */
+  async login(email: string, password: string, second: SecondFactor = {}) {
+    await firstValueFrom(
+      this.http.post('/api/auth/login?useCookies=true', { email, password, ...second }),
+    );
+    this.user.set(await firstValueFrom(this.http.get<Me>('/api/auth/me')));
+  }
+
+  /** The second step of a Google/Discord sign-in when 2FA is on. */
+  async finishExternalSignIn(second: { code?: string; recoveryCode?: string }) {
+    await firstValueFrom(this.http.post('/api/auth/2fa', second));
     this.user.set(await firstValueFrom(this.http.get<Me>('/api/auth/me')));
   }
 

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using FiveStack.Api.Data;
 using Microsoft.AspNetCore.Authentication;
@@ -7,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace FiveStack.Api.Auth;
+
+/// <summary>The second step of a Google/Discord sign-in when 2FA is on: an authenticator code or a recovery code.</summary>
+public record TwoFactorInput([StringLength(16)] string? Code, [StringLength(32)] string? RecoveryCode);
 
 public record MeDto(Guid Id, string? Email, string? DisplayName, string? DiscordUsername, bool Onboarded, IEnumerable<string> Logins);
 
@@ -74,6 +78,8 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
             var existing = await users.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
             return Redirect(existing?.OnboardedAt is null ? Onboarding(returnUrl) : returnUrl);
         }
+        // 2FA is on: Identity set its short-lived TwoFactorUserId cookie, and the login page asks for the code (POST 2fa).
+        if (result.RequiresTwoFactor) return Redirect($"/login?step=2fa&returnUrl={Uri.EscapeDataString(returnUrl)}");
         if (result.IsLockedOut || result.IsNotAllowed) return Redirect("/login?error=not-allowed");
 
         // Keep the provider's email only if the provider verified it. An unverified one could belong to someone else,
@@ -98,6 +104,20 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
         await signIn.SignInAsync(user, isPersistent: true, info.LoginProvider);
         return Redirect(Onboarding(returnUrl));
+    }
+
+    /// <summary>
+    /// Finishes a Google/Discord sign-in for a player with 2FA on. Password logins send the code to /login instead.
+    /// Wrong codes count toward Identity's lockout.
+    /// </summary>
+    [HttpPost("2fa")]
+    [EnableRateLimiting("auth")]
+    public async Task<IActionResult> TwoFactor(TwoFactorInput input)
+    {
+        var result = input.RecoveryCode is { Length: > 0 } recovery
+            ? await signIn.TwoFactorRecoveryCodeSignInAsync(recovery.Replace(" ", ""))
+            : await signIn.TwoFactorAuthenticatorSignInAsync((input.Code ?? "").Replace(" ", ""), isPersistent: true, rememberClient: false);
+        return result.Succeeded ? NoContent() : Problem(result.IsLockedOut ? "LockedOut" : "Failed", statusCode: 401);
     }
 
     private async Task<IActionResult> Link(AppUser user, ExternalLoginInfo info, string returnUrl)

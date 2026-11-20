@@ -60,7 +60,7 @@
 - [x] Observability: OpenTelemetry traces/metrics/logs to Grafana Cloud, domain metrics, JSON logs
 - [x] Email confirmation + password reset (Resend), host-header-safe links, verified provider emails only
 - [ ] Custom domain + Resend domain verification + production env vars (manual, see DEPLOYMENT.md)
-- [ ] TOTP two-factor authentication
+- [x] TOTP two-factor authentication (Settings setup with QR + recovery codes; password and Google/Discord sign-ins)
 
 ## Later (not in MVP)
 - Riot Sign On (RSO) rank verification (requires a Riot production API key)
