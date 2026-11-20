@@ -90,6 +90,12 @@ cd client && npm run e2e          # Playwright, against `docker compose --profil
 
 Every PR runs format and lint checks, a warnings-as-errors build (which also fails on vulnerable NuGet packages), `npm audit`, a migration drift check, unit and integration tests with a coverage summary, and Playwright E2E against the production Docker image. Render deploys `main` only after all of it passes.
 
+## Observability
+
+OpenTelemetry sends traces (with a span per SQL query), metrics and JSON logs to Grafana. The dashboard ([JSON](docs/observability/grafana-dashboard.json)) shows players online, request rate, p95 latency per route, error share, rate-limited requests, DB latency and product activity. Run it locally with `OTEL_EXPORTER_OTLP_ENDPOINT=http://otel:4317 docker compose --profile app --profile otel up -d --build`, then open Grafana at http://localhost:3000.
+
+![Grafana dashboard: players online, request rate, p95 latency, DB p95, messages and squads per minute](docs/media/grafana.png)
+
 ## Project docs
 
 - [Architecture](docs/ARCHITECTURE.md)
