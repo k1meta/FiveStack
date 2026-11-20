@@ -16,6 +16,9 @@ public record MeDto(Guid Id, string? Email, string? DisplayName, string? Discord
 [Route("api/auth")]
 public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> signIn) : ControllerBase
 {
+    /// <summary>Set from Google's `email_verified` and Discord's `verified` (see Program.cs).</summary>
+    public const string EmailVerifiedClaim = "email_verified";
+
     [Authorize]
     [HttpGet("me")]
     public async Task<ActionResult<MeDto>> Me()
@@ -73,7 +76,10 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
         }
         if (result.IsLockedOut || result.IsNotAllowed) return Redirect("/login?error=not-allowed");
 
-        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+        // Keep the provider's email only if the provider verified it. An unverified one could belong to someone else,
+        // who would then be locked out of signing up with it, or could take this account over with a password reset.
+        var verified = string.Equals(info.Principal.FindFirstValue(EmailVerifiedClaim), "true", StringComparison.OrdinalIgnoreCase);
+        var email = verified ? info.Principal.FindFirstValue(ClaimTypes.Email) : null;
         // Never auto-link by email: password-account emails are unverified, so that would allow pre-account hijacking.
         if (email is not null && await users.FindByEmailAsync(email) is not null)
             return Redirect("/login?error=email-in-use");
@@ -82,6 +88,7 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
         {
             UserName = email ?? $"{info.LoginProvider}-{info.ProviderKey}",
             Email = email,
+            EmailConfirmed = email is not null,
             DisplayName = Truncate(info.Principal.FindFirstValue(ClaimTypes.Name), 32),
         };
         ApplyDiscord(user, info);

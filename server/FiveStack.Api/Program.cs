@@ -1,9 +1,11 @@
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 using FiveStack.Api;
+using FiveStack.Api.Auth;
 using FiveStack.Api.Chat;
 using FiveStack.Api.Data;
 using FiveStack.Api.Meta;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
@@ -29,8 +31,27 @@ var connectionString = PgUrl(config["DATABASE_URL"]) ?? config.GetConnectionStri
 builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connectionString));
 
 // Cookie auth via Identity's API endpoints. Unauthenticated API calls get 401, not a redirect.
-builder.Services.AddIdentityApiEndpoints<AppUser>(o => o.User.RequireUniqueEmail = true)
+// Password sign-in needs a confirmed email (off only for the E2E stack, which has no inbox).
+var requireConfirmedEmail = config.GetValue("Auth:RequireConfirmedEmail", true);
+builder.Services.AddIdentityApiEndpoints<AppUser>(o =>
+    {
+        o.User.RequireUniqueEmail = true;
+        o.SignIn.RequireConfirmedAccount = requireConfirmedEmail;
+    })
     .AddEntityFrameworkStores<AppDbContext>();
+builder.Services.AddScoped<IUserConfirmation<AppUser>, ConfirmedEmailOrExternalLogin>();
+builder.Services.AddTransient<IEmailSender<AppUser>, EmailSender>();
+builder.Services.AddHttpClient(EmailSender.HttpClientName);
+
+// Fail at startup, not at the first sign-up: outside Development, email links need the public URL,
+// and required confirmation needs a way to send email.
+if (!builder.Environment.IsDevelopment())
+{
+    if (string.IsNullOrEmpty(config["App:PublicUrl"]))
+        throw new InvalidOperationException("Set App:PublicUrl (e.g. https://fivestack.example): email links are built from it.");
+    if (requireConfirmedEmail && (string.IsNullOrEmpty(config["Email:ResendApiKey"]) || string.IsNullOrEmpty(config["Email:From"])))
+        throw new InvalidOperationException("Set Email:ResendApiKey and Email:From, or turn off Auth:RequireConfirmedEmail.");
+}
 
 // OAuth providers are optional: each one is registered only when its ClientId is set.
 var auth = builder.Services.AddAuthentication();
@@ -41,6 +62,7 @@ if (config["Authentication:Google:ClientId"] is { Length: > 0 } googleId)
         o.ClientSecret = config["Authentication:Google:ClientSecret"]!;
         o.CallbackPath = "/api/auth/signin-google"; // under /api so the dev proxy forwards it
         o.SignInScheme = IdentityConstants.ExternalScheme;
+        o.ClaimActions.MapJsonKey(AuthController.EmailVerifiedClaim, "email_verified");
     });
 if (config["Authentication:Discord:ClientId"] is { Length: > 0 } discordId)
     auth.AddDiscord(o =>
@@ -50,6 +72,7 @@ if (config["Authentication:Discord:ClientId"] is { Length: > 0 } discordId)
         o.CallbackPath = "/api/auth/signin-discord";
         o.SignInScheme = IdentityConstants.ExternalScheme;
         o.Scope.Add("email");
+        o.ClaimActions.MapJsonKey(AuthController.EmailVerifiedClaim, "verified"); // Discord's flag for the email
     });
 
 builder.Services.AddDataProtection()

@@ -138,7 +138,10 @@ With config `Demo:Seed` on (Development, and the live demo via `Demo__Seed=true`
 
 ## Authentication
 
-- **Email/password**: ASP.NET Core Identity's `MapIdentityApi` endpoints in cookie mode.
+- **Email/password**: ASP.NET Core Identity's `MapIdentityApi` endpoints in cookie mode. Password sign-in needs a confirmed email (`RequireConfirmedAccount`). Sign-up emails a link to the SPA's `/confirm-email` page, and "forgot password" emails a link to `/reset-password`. `Auth/EmailSender.cs` sends both through Resend's HTTP API. Login answers 401 with `detail: "NotAllowed"` until the email is confirmed, and the SPA then offers to resend the link.
+- **Email links ignore the request's Host header.** They're built from `App:PublicUrl`. MapIdentityApi builds its confirmation link from the request host, so a register call with `Host: evil.example` would otherwise email the victim a working code on the attacker's site (a test covers this). MapIdentityApi also HTML-encodes the link and code before handing them over, so the sender decodes them first.
+- **Who counts as confirmed** (`ConfirmedEmailOrExternalLogin`): a confirmed email, or any Google/Discord login, because the provider vouches for the account. A provider's email is stored only when the provider marks it verified (Google `email_verified`, Discord `verified`). An unverified one could be someone else's address, and that person could later take the account over with a password reset.
+- **Startup checks:** outside Development, the app refuses to start without `App:PublicUrl`, or without a Resend key while confirmation is on. A misconfigured deploy then fails Render's health check and the old version keeps serving.
 - **Google / Discord**: standard OAuth handlers. Callback paths live under `/api/auth/signin-*`, so the Angular dev proxy forwards them.
 - **Account linking**: a signed-in user who starts the Discord flow gets the login linked (`UserLoginInfo`), and `DiscordId`/`DiscordUsername` are stored for the profile's "Copy Discord" button.
 - **Data Protection keys** are stored in Postgres (`PersistKeysToDbContext`), so cookies survive container restarts and redeploys.
@@ -187,6 +190,7 @@ OpenTelemetry exports traces, metrics and logs over OTLP. Production sends them 
 - Public profiles never include the email or `DisplayName`, which is the real name from a Google account. Discord shows only when the player opts in.
 - Errors are RFC 9457 problem details (`AddProblemDetails`, `UseExceptionHandler`, `UseStatusCodePages`) with a `traceId` that matches the OpenTelemetry trace. Production never returns stack traces.
 - Security headers on every response: a strict CSP (`default-src 'self'`, so no inline or third-party scripts; images also from `media.valorant-api.com`; `frame-ancestors 'none'`), `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, plus HSTS outside Development. Styles allow `'unsafe-inline'` because Angular injects component `<style>` tags. `/scalar` is exempt (its page runs an inline script). Critical-CSS inlining is off in `angular.json` because its loader is an inline script the CSP would block.
+- Email confirmation for password accounts. Email links are built from config, not the Host header. Provider emails are trusted only when verified. "Forgot password" answers the same for unknown addresses. Identity locks an account for 5 minutes after 5 failed logins.
 - The container runs as the image's non-root `app` user.
 - Input lengths are capped with DataAnnotations. Angular escapes all bound text.
 - `SameSite=Lax` cookie + JSON-only request bodies mitigate CSRF.

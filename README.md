@@ -22,7 +22,7 @@
 
 ## Features
 
-- **Sign up your way:** email + password, or one click with **Google** or **Discord**.
+- **Sign up your way:** email + password (with email confirmation and password reset), or one click with **Google** or **Discord**.
 - **Rich player profiles:** Riot ID, region & preferred servers, platform (PC / PlayStation / Xbox), current & peak rank, roles, agent pool, languages, mic, game modes, playstyle, play times.
 - **Player finder:** filter by any profile field, including *"plays Omen or Viper"* and *"Controller main, Plat to Diamond, EU Frankfurt, has mic"*. Filters live in the URL, so searches are shareable.
 - **Squads board:** post an LFG listing ("2/5, need Controller + Sentinel"). Players request to join, and the host accepts them into the squad chat. Posts expire automatically.
