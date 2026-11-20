@@ -53,9 +53,16 @@
 - [x] README screenshots + GIF, live link
 - [ ] Live link on resume
 
+## M8: Hardening
+- [x] API hardening: sign-in-only auth rate limit (fixes 429 logouts on reload), global per-IP limit, problem-details errors, no real names in public profiles, non-root container, concurrent-accept test
+- [ ] Browser security: security headers + CSP, HSTS, self-hosted fonts
+- [ ] CI gates: format, lint, warnings as errors, migration drift, coverage, Docker build, Playwright E2E, Dependabot, CodeQL
+- [ ] Observability: OpenTelemetry traces/metrics/logs to Grafana Cloud, domain metrics, JSON logs
+- [ ] Custom domain, email confirmation + password reset (Resend)
+- [ ] TOTP two-factor authentication
+
 ## Later (not in MVP)
 - Riot Sign On (RSO) rank verification (requires a Riot production API key)
-- Email confirmation + password reset (Resend)
 - Report user / moderation queue
 - "Quick match" compatibility scoring
 - Redis SignalR backplane (only if running more than one instance)

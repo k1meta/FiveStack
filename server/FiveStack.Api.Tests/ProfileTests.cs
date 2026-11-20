@@ -1,6 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using FiveStack.Api.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FiveStack.Api.Tests;
 
@@ -70,12 +73,19 @@ public class ProfileTests(ApiFactory factory)
         var me = await client.GetFromJsonAsync<JsonElement>("/api/auth/me");
         Assert.True(me.GetProperty("onboarded").GetBoolean());
 
+        // Google sign-ups get DisplayName from the Google account: a real name that must stay private.
+        using (var scope = factory.Services.CreateScope())
+            await scope.ServiceProvider.GetRequiredService<AppDbContext>().Users
+                .Where(u => u.Email == "saver@example.com")
+                .ExecuteUpdateAsync(s => s.SetProperty(u => u.DisplayName, "Ana Realname"));
+
         var id = me.GetProperty("id").GetString();
         var res = await factory.CreateClient().GetAsync($"/api/profiles/{id}"); // anonymous viewer
         var body = await res.Content.ReadAsStringAsync();
         Assert.Equal(HttpStatusCode.OK, res.StatusCode);
         Assert.Contains("\"rank\":14", body);
         Assert.DoesNotContain("saver@example.com", body);
+        Assert.DoesNotContain("Ana Realname", body);
     }
 
     [Fact]

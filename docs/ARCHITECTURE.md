@@ -173,7 +173,10 @@ sequenceDiagram
 ## Security checklist
 
 - Membership is checked on every conversation read, send and mark-read; a non-member gets the same 404 as a missing conversation. Blocks are enforced on DM creation and send.
-- Rate limiting (`AddRateLimiter`) applies to auth, squad creation, message send (30/min per user) and starting a DM (30/hour per user).
+- Rate limiting (`AddRateLimiter`): every `/api` call is capped per IP (300/min). On top of that, the sign-in flows (Identity endpoints, external login) get 20/min per IP, squad creation 10/hour per user, message send 30/min per user and starting a DM 30/hour per user. `/api/auth/me` and `/providers` aren't in the sign-in limit, because the SPA calls them on every page load. A 429 carries `Retry-After`.
+- Public profiles never include the email or `DisplayName`, which is the real name from a Google account. Discord shows only when the player opts in.
+- Errors are RFC 9457 problem details (`AddProblemDetails`, `UseExceptionHandler`, `UseStatusCodePages`) with a `traceId`. Production never returns stack traces.
+- The container runs as the image's non-root `app` user.
 - Input lengths are capped with DataAnnotations. Angular escapes all bound text.
 - `SameSite=Lax` cookie + JSON-only request bodies mitigate CSRF.
 - `UseForwardedHeaders` is enabled so OAuth redirect URIs use `https` behind Render's proxy.

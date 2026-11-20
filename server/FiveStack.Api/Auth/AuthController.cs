@@ -11,9 +11,9 @@ namespace FiveStack.Api.Auth;
 public record MeDto(Guid Id, string? Email, string? DisplayName, string? DiscordUsername, bool Onboarded, IEnumerable<string> Logins);
 
 // Email/password endpoints (register, login, ...) come from MapIdentityApi in Program.cs.
+// Only the sign-in flows are auth-rate-limited: the SPA calls /me and /providers on every page load.
 [ApiController]
 [Route("api/auth")]
-[EnableRateLimiting("auth")]
 public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> signIn) : ControllerBase
 {
     [Authorize]
@@ -41,6 +41,7 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
 
     // Signed out: log in or sign up. Signed in: link the provider to the current account.
     [HttpGet("external/{provider}")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> External(string provider, string returnUrl = "/")
     {
         if (!Url.IsLocalUrl(returnUrl)) return BadRequest("returnUrl must be a local path.");
@@ -52,6 +53,7 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
     }
 
     [HttpGet("external/callback")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Callback(string returnUrl = "/")
     {
         if (!Url.IsLocalUrl(returnUrl)) returnUrl = "/";
