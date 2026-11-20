@@ -62,6 +62,12 @@
 - [ ] Custom domain + Resend domain verification + production env vars (manual, see DEPLOYMENT.md)
 - [x] TOTP two-factor authentication (Settings setup with QR + recovery codes; password and Google/Discord sign-ins)
 
+## M9: Auth UX (next)
+- [ ] Google and Discord icons on the "Continue with …" buttons (login, register, Settings > Linked accounts)
+- [ ] Show/hide password toggle on login, register and reset-password
+- [ ] "Confirm password" field on register and reset-password
+- [ ] Review password storage and hashing (where hashes live, algorithm and work factor, policy)
+
 ## Later (not in MVP)
 - Riot Sign On (RSO) rank verification (requires a Riot production API key)
 - Report user / moderation queue
