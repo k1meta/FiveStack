@@ -55,7 +55,9 @@ export class ChatService {
 
   async load() {
     try {
-      this.conversations.set(await firstValueFrom(this.http.get<Conversation[]>('/api/conversations')));
+      this.conversations.set(
+        await firstValueFrom(this.http.get<Conversation[]>('/api/conversations')),
+      );
     } catch {
       // keep the last list; the next push or page load retries
     }
@@ -63,14 +65,20 @@ export class ChatService {
 
   /** Finds or starts the DM with a player and returns its id. */
   async startDm(userId: string) {
-    const { id } = await firstValueFrom(this.http.post<{ id: string }>(`/api/conversations/dm/${userId}`, null));
+    const { id } = await firstValueFrom(
+      this.http.post<{ id: string }>(`/api/conversations/dm/${userId}`, null),
+    );
     await this.load();
     return id;
   }
 
   markRead(id: string) {
     this.conversations.update((list) => list.map((c) => (c.id === id ? { ...c, unread: 0 } : c)));
-    this.http.post(`/api/conversations/${id}/read`, null).subscribe({ error: () => { /* best effort: the badge is already cleared locally */ } });
+    this.http.post(`/api/conversations/${id}/read`, null).subscribe({
+      error: () => {
+        /* best effort: the badge is already cleared locally */
+      },
+    });
   }
 
   private async start() {
@@ -84,7 +92,10 @@ export class ChatService {
     });
     hub.onreconnected(() => void this.load()); // pushes sent while offline are lost
     this.hub = hub;
-    await Promise.all([hub.start().catch((e) => console.warn('Chat hub unavailable', e)), this.load()]);
+    await Promise.all([
+      hub.start().catch((e) => console.warn('Chat hub unavailable', e)),
+      this.load(),
+    ]);
   }
 
   private async stop() {
@@ -101,7 +112,10 @@ export class ChatService {
     } else {
       const read = m.senderId === this.userId() || m.conversationId === this.openId();
       const updated = { ...known, last: m, unread: read ? known.unread : known.unread + 1 };
-      this.conversations.update((list) => [updated, ...list.filter((c) => c.id !== m.conversationId)]);
+      this.conversations.update((list) => [
+        updated,
+        ...list.filter((c) => c.id !== m.conversationId),
+      ]);
       if (read && m.senderId !== this.userId()) this.markRead(m.conversationId);
     }
     this.messages.next(m);

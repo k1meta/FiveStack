@@ -1,5 +1,14 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -49,13 +58,19 @@ export class MessagesPage {
     if (!id) return;
     this.loading.set(true);
     try {
-      const page = await firstValueFrom(this.http.get<ChatMessage[]>(`/api/conversations/${id}/messages`));
+      const page = await firstValueFrom(
+        this.http.get<ChatMessage[]>(`/api/conversations/${id}/messages`),
+      );
       if (id !== this.id()) return; // switched threads meanwhile
       this.add(page);
       this.hasOlder.set(page.length === PAGE_SIZE);
       this.chat.markRead(id);
     } catch (e) {
-      this.failure.set(e instanceof HttpErrorResponse && e.status === 404 ? 'Conversation not found.' : errorMessage(e));
+      this.failure.set(
+        e instanceof HttpErrorResponse && e.status === 404
+          ? 'Conversation not found.'
+          : errorMessage(e),
+      );
     } finally {
       this.loading.set(false);
     }
@@ -68,7 +83,9 @@ export class MessagesPage {
     this.loading.set(true);
     try {
       const page = await firstValueFrom(
-        this.http.get<ChatMessage[]>(`/api/conversations/${id}/messages`, { params: { before: oldest.id } }),
+        this.http.get<ChatMessage[]>(`/api/conversations/${id}/messages`, {
+          params: { before: oldest.id },
+        }),
       );
       this.add(page);
       this.hasOlder.set(page.length === PAGE_SIZE);
@@ -87,7 +104,11 @@ export class MessagesPage {
     this.sending.set(true);
     this.failure.set(null);
     try {
-      this.add([await firstValueFrom(this.http.post<ChatMessage>(`/api/conversations/${id}/messages`, { body }))]);
+      this.add([
+        await firstValueFrom(
+          this.http.post<ChatMessage>(`/api/conversations/${id}/messages`, { body }),
+        ),
+      ]);
       this.draft.set('');
     } catch (e) {
       this.failure.set(errorMessage(e));

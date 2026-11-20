@@ -1,7 +1,13 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree, provideRouter } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  Router,
+  RouterStateSnapshot,
+  UrlTree,
+  provideRouter,
+} from '@angular/router';
 import { authGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 
@@ -12,7 +18,9 @@ describe('authGuard', () => {
     );
 
   beforeEach(() =>
-    TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] }),
+    TestBed.configureTestingModule({
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+    }),
   );
 
   it('redirects signed-out users to /login with a returnUrl', () => {
@@ -21,7 +29,14 @@ describe('authGuard', () => {
   });
 
   it('lets signed-in users through', () => {
-    TestBed.inject(AuthService).user.set({ id: '1', email: 'a@b.c', displayName: null, discordUsername: null, onboarded: false, logins: [] });
+    TestBed.inject(AuthService).user.set({
+      id: '1',
+      email: 'a@b.c',
+      displayName: null,
+      discordUsername: null,
+      onboarded: false,
+      logins: [],
+    });
     expect(run()).toBe(true);
   });
 });

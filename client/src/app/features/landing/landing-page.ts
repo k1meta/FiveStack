@@ -14,9 +14,18 @@ export class LandingPage {
   protected meta = inject(MetaService);
 
   protected readonly steps = [
-    { title: 'Build your profile', body: 'Riot ID, rank, roles, agent pool, servers, languages and mic. Takes two minutes.' },
-    { title: 'Find or post', body: 'Filter players by anything on their profile, or post a squad and say what you need.' },
-    { title: 'Chat and queue', body: 'Accepted players land in a squad chat. Swap Discords and load in.' },
+    {
+      title: 'Build your profile',
+      body: 'Riot ID, rank, roles, agent pool, servers, languages and mic. Takes two minutes.',
+    },
+    {
+      title: 'Find or post',
+      body: 'Filter players by anything on their profile, or post a squad and say what you need.',
+    },
+    {
+      title: 'Chat and queue',
+      body: 'Accepted players land in a squad chat. Swap Discords and load in.',
+    },
   ];
 
   protected agentsFor(role: string) {

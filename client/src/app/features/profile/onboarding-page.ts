@@ -10,7 +10,9 @@ import { ProfileEditor } from './profile-editor';
   template: `
     <section class="mx-auto max-w-3xl px-4 py-12">
       <h1 class="font-display text-4xl uppercase tracking-wide">Build your profile</h1>
-      <p class="mt-2 text-val-bone/70">So the right teammates can find you. You can change all of it later in Settings.</p>
+      <p class="mt-2 text-val-bone/70">
+        So the right teammates can find you. You can change all of it later in Settings.
+      </p>
       <app-profile-editor wizard class="mt-8 block" (saved)="done()" />
     </section>
   `,

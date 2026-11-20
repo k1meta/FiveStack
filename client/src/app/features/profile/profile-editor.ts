@@ -78,7 +78,9 @@ export class ProfileEditor {
   });
 
   constructor() {
-    this.http.get<Profile>('/api/me/profile').subscribe((p) => this.form.patchValue({ ...p, bio: p.bio ?? '' }));
+    this.http
+      .get<Profile>('/api/me/profile')
+      .subscribe((p) => this.form.patchValue({ ...p, bio: p.bio ?? '' }));
   }
 
   protected show(i: number) {

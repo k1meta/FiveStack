@@ -1,6 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { Meta, MetaService } from '../../core/meta.service';
@@ -49,10 +55,12 @@ export class SquadForm {
 
   constructor() {
     // Start from where the host plays.
-    this.http.get<Profile>('/api/me/profile').subscribe((p) =>
-      this.form.patchValue({ region: p.region, server: p.servers[0] ?? null }),
+    this.http
+      .get<Profile>('/api/me/profile')
+      .subscribe((p) => this.form.patchValue({ region: p.region, server: p.servers[0] ?? null }));
+    this.form.controls.region.valueChanges.subscribe(() =>
+      this.form.controls.server.setValue(null),
     );
-    this.form.controls.region.valueChanges.subscribe(() => this.form.controls.server.setValue(null));
   }
 
   protected has(key: 'neededRoles' | 'neededAgents', id: string) {
@@ -75,13 +83,19 @@ export class SquadForm {
   protected async save() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.failure.set(this.form.hasError('rankOrder') ? 'Max rank is below min rank.' : 'Fill in the required fields.');
+      this.failure.set(
+        this.form.hasError('rankOrder')
+          ? 'Max rank is below min rank.'
+          : 'Fill in the required fields.',
+      );
       return;
     }
     this.busy.set(true);
     this.failure.set(null);
     try {
-      const { id } = await firstValueFrom(this.http.post<{ id: string }>('/api/squads', this.form.getRawValue()));
+      const { id } = await firstValueFrom(
+        this.http.post<{ id: string }>('/api/squads', this.form.getRawValue()),
+      );
       await this.router.navigate(['/squads', id]);
     } catch (e) {
       this.failure.set(errorMessage(e));

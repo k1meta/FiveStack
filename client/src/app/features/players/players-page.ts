@@ -55,7 +55,8 @@ export class PlayersPage {
   /** Changes filters and goes back to page 1. Empty values drop the param. */
   protected set(changes: Params) {
     const queryParams: Params = { page: null };
-    for (const [k, v] of Object.entries(changes)) queryParams[k] = v === '' || v?.length === 0 ? null : v;
+    for (const [k, v] of Object.entries(changes))
+      queryParams[k] = v === '' || v?.length === 0 ? null : v;
     this.router.navigate([], { queryParams, queryParamsHandling: 'merge' });
   }
 
@@ -64,7 +65,10 @@ export class PlayersPage {
   }
 
   protected goTo(page: number) {
-    this.router.navigate([], { queryParams: { page: page > 1 ? page : null }, queryParamsHandling: 'merge' });
+    this.router.navigate([], {
+      queryParams: { page: page > 1 ? page : null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   protected regionServers(m: Meta) {

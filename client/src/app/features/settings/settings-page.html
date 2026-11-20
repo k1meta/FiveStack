@@ -17,10 +17,17 @@
           <span class="font-semibold">{{ p }}</span>
           @if (auth.user()?.logins?.includes(p)) {
             <span class="text-sm text-val-teal">
-              Linked @if (p === 'Discord' && auth.user()?.discordUsername) { as {{ auth.user()?.discordUsername }} }
+              Linked
+              @if (p === 'Discord' && auth.user()?.discordUsername) {
+                as {{ auth.user()?.discordUsername }}
+              }
             </span>
           } @else {
-            <a [href]="linkUrl(p)" class="text-sm font-semibold uppercase tracking-wider text-val-teal hover:underline">Link</a>
+            <a
+              [href]="linkUrl(p)"
+              class="text-sm font-semibold uppercase tracking-wider text-val-teal hover:underline"
+              >Link</a
+            >
           }
         </li>
       } @empty {
@@ -31,16 +38,27 @@
 
   <div class="space-y-4 border border-val-red/40 p-6">
     <h2 class="font-display text-2xl uppercase tracking-wide text-val-red">Delete account</h2>
-    <p class="text-sm text-val-bone/70">This permanently removes your profile and login. It can't be undone.</p>
+    <p class="text-sm text-val-bone/70">
+      This permanently removes your profile and login. It can't be undone.
+    </p>
     <label class="block max-w-xs">
       <span class="field-label">Type DELETE to confirm</span>
-      <input class="field" autocomplete="off" [value]="confirmText()" (input)="confirmText.set($any($event.target).value)" />
+      <input
+        class="field"
+        autocomplete="off"
+        [value]="confirmText()"
+        (input)="confirmText.set($any($event.target).value)"
+      />
     </label>
     @if (deleteFailure(); as msg) {
       <p role="alert" class="text-sm text-val-red">{{ msg }}</p>
     }
-    <button type="button" [disabled]="confirmText() !== 'DELETE' || deleting()" (click)="deleteAccount()"
-            class="bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110 disabled:opacity-40">
+    <button
+      type="button"
+      [disabled]="confirmText() !== 'DELETE' || deleting()"
+      (click)="deleteAccount()"
+      class="bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110 disabled:opacity-40"
+    >
       Delete my account
     </button>
   </div>
