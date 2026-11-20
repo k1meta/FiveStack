@@ -34,12 +34,3 @@ jobs:
           dotnet-version: 10.0.x
       - run: dotnet test   # integration tests use Testcontainers (Docker is available on ubuntu runners)
 
-  deploy:
-    needs: [client, server]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Render deploy
-        env:
-          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
-        run: if [ -n "$HOOK" ]; then curl -fsS -X POST "$HOOK"; else echo "RENDER_DEPLOY_HOOK not set, skipping"; fi

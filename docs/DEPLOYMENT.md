@@ -33,7 +33,7 @@ Migrations run automatically on app startup. To run the API locally against Neon
    | `Authentication__Discord__ClientId` / `__ClientSecret` | from Discord Developer Portal |
    | `Demo__Seed` | `true`: seeds 150 demo players and keeps 6 demo squad posts open |
 
-4. Turn off Render auto-deploy and copy the **Deploy Hook** URL into the GitHub secret `RENDER_DEPLOY_HOOK`. CI then deploys only after tests pass.
+4. Settings > Build & Deploy > Auto-Deploy: **After CI Checks Pass**. Render then deploys `main` only after the GitHub Actions CI run is green.
 5. Set the GitHub Actions **variable** `APP_URL` (e.g. `https://fivestack.onrender.com`) so `keep-warm.yml` pings the app every 10 minutes. Render's free tier sleeps after 15 minutes of inactivity. One always-on service uses ~744 of the 750 free hours per month.
 
 ## OAuth apps
