@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
 
 namespace FiveStack.Api.Tests;
 
@@ -29,5 +30,26 @@ public class AuthTests(ApiFactory factory)
     {
         var res = await factory.CreateClient().GetAsync("/api/auth/external/Google?returnUrl=https://evil.example");
         Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task Only_sign_in_endpoints_are_auth_rate_limited()
+    {
+        using var strict = factory.WithWebHostBuilder(b => b.UseSetting("RateLimits:AuthPerMinute", "2"));
+        var client = strict.CreateClient();
+
+        // The SPA calls these on every page load, so they must not eat into the sign-in budget.
+        for (var i = 0; i < 5; i++)
+        {
+            Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/auth/me")).StatusCode);
+            (await client.GetAsync("/api/auth/providers")).EnsureSuccessStatusCode();
+        }
+
+        var creds = new { email = "nobody@example.com", password = "Wr0ng-pass" };
+        HttpResponseMessage res = null!;
+        for (var i = 0; i < 3; i++) res = await client.PostAsJsonAsync("/api/auth/login", creds);
+        Assert.Equal(HttpStatusCode.TooManyRequests, res.StatusCode);
+        Assert.NotNull(res.Headers.RetryAfter);
+        Assert.Equal("application/problem+json", res.Content.Headers.ContentType?.MediaType);
     }
 }

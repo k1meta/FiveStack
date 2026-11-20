@@ -93,6 +93,29 @@ public class SquadTests(ApiFactory factory)
     }
 
     [Fact]
+    public async Task Concurrent_accepts_cannot_oversell_slots()
+    {
+        var (host, _) = await factory.Player("sq-race-host@example.com");
+        var post = await Post(host, Squad("Race for one slot", slots: 1));
+        var players = new List<string>();
+        for (var i = 0; i < 3; i++)
+        {
+            var (p, id) = await factory.Player($"sq-race-{i}@example.com");
+            (await p.PostAsync($"/api/squads/{post}/requests", null)).EnsureSuccessStatusCode();
+            players.Add(id);
+        }
+
+        var results = await Task.WhenAll(players.Select(id => Decide(host, post, id, "accepted")));
+
+        Assert.Single(results, r => r.StatusCode == HttpStatusCode.NoContent);
+        Assert.All(results.Where(r => r.StatusCode != HttpStatusCode.NoContent),
+            r => Assert.Equal(HttpStatusCode.Conflict, r.StatusCode));
+        var detail = await host.GetFromJsonAsync<JsonElement>($"/api/squads/{post}");
+        Assert.Equal(0, detail.GetProperty("post").GetProperty("slotsOpen").GetInt32());
+        Assert.Single(detail.GetProperty("roster").EnumerateArray());
+    }
+
+    [Fact]
     public async Task Expired_post_is_off_the_board_and_not_joinable()
     {
         var (host, _) = await factory.Player("sq-exp-host@example.com");

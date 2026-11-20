@@ -10,7 +10,6 @@ import { RankBadge } from '../../shared/rank-badge';
 
 export interface PublicProfile {
   id: string;
-  displayName: string | null;
   riotName: string;
   riotTag: string;
   region: string;

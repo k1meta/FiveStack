@@ -14,6 +14,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     protected override void ConfigureWebHost(IWebHostBuilder builder) => builder
         .UseSetting("ConnectionStrings:Default", _db.GetConnectionString())
         .UseSetting("RateLimits:AuthPerMinute", "1000")
+        .UseSetting("RateLimits:GlobalPerMinute", "100000")
         .UseSetting("Demo:Seed", "false") // appsettings.Development turns it on; tests seed explicitly (DemoTests)
         .UseSetting("DATABASE_URL", "").UseSetting("DATABASE_URL_UNPOOLED", ""); // never hit Neon from tests
 

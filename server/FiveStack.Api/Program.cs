@@ -14,6 +14,7 @@ var config = builder.Configuration;
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails(); // RFC 9457 bodies (with traceId) for exceptions and empty 4xx/5xx
 
 // Neon (`neon env pull`, or Render env vars) gives postgres:// URLs: pooled DATABASE_URL for app traffic,
 // direct DATABASE_URL_UNPOOLED for migrations. Without them, ConnectionStrings:Default (local Docker Postgres).
@@ -48,10 +49,24 @@ builder.Services.AddDataProtection()
     .PersistKeysToDbContext<AppDbContext>()
     .SetApplicationName("FiveStack");
 
-var authPerMinute = config.GetValue("RateLimits:AuthPerMinute", 20); // tests raise it: they all share one "IP"
+// Tests raise both limits: they all share one "IP".
+var authPerMinute = config.GetValue("RateLimits:AuthPerMinute", 20);
+var globalPerMinute = config.GetValue("RateLimits:GlobalPerMinute", 300);
 builder.Services.AddRateLimiter(o =>
 {
     o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    o.OnRejected = (ctx, _) =>
+    {
+        if (ctx.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retry))
+            ctx.HttpContext.Response.Headers.RetryAfter = ((int)retry.TotalSeconds).ToString();
+        return ValueTask.CompletedTask;
+    };
+    // Every API call, per IP, on top of the named policies below. Caps scraping of the public search endpoints.
+    o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
+        ctx.Request.Path.StartsWithSegments("/api")
+            ? RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = globalPerMinute, Window = TimeSpan.FromMinutes(1) })
+            : RateLimitPartition.GetNoLimiter(""));
     o.AddPolicy("auth", ctx => RateLimitPartition.GetFixedWindowLimiter(
         ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = authPerMinute, Window = TimeSpan.FromMinutes(1) }));
@@ -83,6 +98,9 @@ using (var scope = app.Services.CreateScope())
         await DemoSeed.TopUpPostsAsync(db);
     }
 }
+
+if (!app.Environment.IsDevelopment()) app.UseExceptionHandler(); // Development keeps the detailed error page
+app.UseStatusCodePages();
 
 app.MapOpenApi();
 app.MapScalarApiReference(); // API docs at /scalar
