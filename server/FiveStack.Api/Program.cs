@@ -205,7 +205,17 @@ app.Use(async (ctx, next) =>
     await next();
 });
 
-app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
+app.MapGet("/api/health", (HttpContext ctx, ILogger<Program> log) =>
+{
+    // TEMPORARY (remove in the follow-up PR): shows which proxy headers Render sends, to key per-IP rate limits correctly.
+    // Only requests with ?ipcheck log anything, so no visitor's IP is recorded.
+    if (ctx.Request.Query.ContainsKey("ipcheck"))
+        log.LogWarning("ipcheck remote={Remote} xff={Xff} xff-original={XffOriginal} true-client-ip={TrueClientIp} cf-connecting-ip={CfIp}",
+            ctx.Connection.RemoteIpAddress, ctx.Request.Headers["X-Forwarded-For"].ToString(),
+            ctx.Request.Headers["X-Original-For"].ToString(), ctx.Request.Headers["True-Client-IP"].ToString(),
+            ctx.Request.Headers["CF-Connecting-IP"].ToString());
+    return Results.Ok(new { status = "ok" });
+});
 app.MapGet("/api/meta", () => GameData.All);
 app.MapGroup("/api/auth").MapIdentityApi<AppUser>().RequireRateLimiting("auth"); // login with ?useCookies=true
 app.MapControllers();
