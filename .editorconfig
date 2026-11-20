@@ -12,3 +12,10 @@ trim_trailing_whitespace = true
 indent_size = 4
 csharp_style_namespace_declarations = file_scoped:suggestion
 csharp_style_var_elsewhere = true:suggestion
+# Several short members per line in object initializers and anonymous types is house style.
+csharp_new_line_before_members_in_object_initializers = false
+csharp_new_line_before_members_in_anonymous_types = false
+
+# EF-generated migrations: dotnet format leaves them alone.
+[**/Migrations/*.cs]
+generated_code = true

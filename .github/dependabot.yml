@@ -1,0 +1,42 @@
+# Weekly dependency updates, grouped so they arrive as a few PRs. CI (incl. E2E) must pass before merging.
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directories: ["/", "/server"] # "/" holds dotnet-tools.json (dotnet-ef)
+    schedule:
+      interval: weekly
+    groups:
+      microsoft:
+        patterns: ["Microsoft.*", "Npgsql*", "AspNet.Security.*", "dotnet-ef"]
+      opentelemetry:
+        patterns: ["OpenTelemetry*"]
+      test:
+        patterns: ["xunit*", "Testcontainers*", "coverlet*"]
+
+  - package-ecosystem: npm
+    directory: /client
+    schedule:
+      interval: weekly
+    groups:
+      angular: # Angular pins the TypeScript range it supports, so they move together
+        patterns: ["@angular/*", "@angular-devkit/*", "angular-eslint", "typescript"]
+      lint:
+        patterns: ["eslint", "@eslint/*", "typescript-eslint", "prettier"]
+      test:
+        patterns: ["vitest", "jsdom", "@playwright/test"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: node # stay on the LTS line; bump majors by hand
+        update-types: ["version-update:semver-major"]

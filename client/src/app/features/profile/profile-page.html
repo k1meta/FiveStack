@@ -5,7 +5,9 @@
       <div>
         <h1 class="font-display text-5xl uppercase tracking-wide">
           {{ p.riotName }}<span class="text-val-bone/60">#{{ p.riotTag }}</span>
-          @if (p.isDemo) { <span class="demo-chip" title="Sample player for the live demo">Demo</span> }
+          @if (p.isDemo) {
+            <span class="demo-chip" title="Sample player for the live demo">Demo</span>
+          }
         </h1>
         <p class="mt-2 text-sm uppercase tracking-wider text-val-bone/70">
           @if (p.online) {
@@ -14,41 +16,65 @@
             </span>
           }
           {{ meta.name(m?.regions, p.region) }}
-          @if (p.platform) { · {{ meta.name(m?.platforms, p.platform) }} }
-          @if (p.playstyle) { · {{ meta.name(m?.playstyles, p.playstyle) }} }
+          @if (p.platform) {
+            · {{ meta.name(m?.platforms, p.platform) }}
+          }
+          @if (p.playstyle) {
+            · {{ meta.name(m?.playstyles, p.playstyle) }}
+          }
         </p>
       </div>
       <div class="flex flex-wrap gap-3">
         @if (p.discordUsername; as discord) {
-          <button type="button" (click)="copyDiscord(discord)"
-                  class="clip-angle bg-val-red px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:brightness-110">
+          <button
+            type="button"
+            (click)="copyDiscord(discord)"
+            class="clip-angle bg-val-red px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:brightness-110"
+          >
             {{ copied() ? 'Copied!' : 'Copy Discord' }}
           </button>
         }
-        <a [href]="trackerUrl(p)" target="_blank" rel="noopener"
-           class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal">
+        <a
+          [href]="trackerUrl(p)"
+          target="_blank"
+          rel="noopener"
+          class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal"
+        >
           View on tracker.gg
         </a>
         @if (auth.user() && !isMe()) {
           @if (auth.user()?.onboarded && !blocked() && !p.isDemo) {
-            <button type="button" (click)="message()" [disabled]="busy()"
-                    class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal disabled:opacity-50">
+            <button
+              type="button"
+              (click)="message()"
+              [disabled]="busy()"
+              class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal disabled:opacity-50"
+            >
               Message
             </button>
           }
-          <button type="button" (click)="toggleBlock(p)" [disabled]="busy()"
-                  class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-red disabled:opacity-50">
+          <button
+            type="button"
+            (click)="toggleBlock(p)"
+            [disabled]="busy()"
+            class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-red disabled:opacity-50"
+          >
             {{ blocked() ? 'Unblock' : 'Block' }}
           </button>
         }
         @if (isMe()) {
-          <a routerLink="/settings" class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal">
+          <a
+            routerLink="/settings"
+            class="border border-white/20 px-5 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-teal"
+          >
             Edit profile
           </a>
         }
       </div>
     </header>
-    @if (failure(); as f) { <p class="mt-3 text-sm text-val-red" role="alert">{{ f }}</p> }
+    @if (failure(); as f) {
+      <p class="mt-3 text-sm text-val-red" role="alert">{{ f }}</p>
+    }
 
     <div class="mt-8 grid gap-8 md:grid-cols-[16rem_1fr]">
       <dl class="space-y-5">
@@ -88,7 +114,9 @@
 
       <div class="space-y-8">
         @if (p.bio) {
-          <p class="whitespace-pre-line border-l-4 border-val-red bg-val-ink px-4 py-3">{{ p.bio }}</p>
+          <p class="whitespace-pre-line border-l-4 border-val-red bg-val-ink px-4 py-3">
+            {{ p.bio }}
+          </p>
         }
         @if (p.agents.length) {
           <div>

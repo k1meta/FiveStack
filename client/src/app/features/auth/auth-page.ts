@@ -6,7 +6,8 @@ import { AuthService } from '../../core/auth.service';
 import { errorMessage, safeReturnUrl } from '../../core/util';
 
 const SERVER_ERRORS: Record<string, string> = {
-  'email-in-use': 'An account with that email already exists. Log in with your password, then link the provider in Settings.',
+  'email-in-use':
+    'An account with that email already exists. Log in with your password, then link the provider in Settings.',
   'external-failed': 'Sign-in with that provider failed. Please try again.',
   'not-allowed': 'This account is locked.',
 };
@@ -46,11 +47,20 @@ export class AuthPage {
     this.busy.set(true);
     this.failure.set(null);
     try {
-      await (this.mode() === 'login' ? this.auth.login(email, password) : this.auth.register(email, password));
+      await (this.mode() === 'login'
+        ? this.auth.login(email, password)
+        : this.auth.register(email, password));
       if (this.auth.user()?.onboarded) await this.router.navigateByUrl(this.safeReturnUrl());
-      else await this.router.navigate(['/onboarding'], { queryParams: { returnUrl: this.safeReturnUrl() } });
+      else
+        await this.router.navigate(['/onboarding'], {
+          queryParams: { returnUrl: this.safeReturnUrl() },
+        });
     } catch (e) {
-      this.failure.set(e instanceof HttpErrorResponse && e.status === 401 ? 'Wrong email or password.' : errorMessage(e));
+      this.failure.set(
+        e instanceof HttpErrorResponse && e.status === 401
+          ? 'Wrong email or password.'
+          : errorMessage(e),
+      );
     } finally {
       this.busy.set(false);
     }

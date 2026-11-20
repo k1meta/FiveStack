@@ -1,20 +1,37 @@
-<a href="#main" class="sr-only bg-val-red px-4 py-2 focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60]">Skip to content</a>
+<a
+  href="#main"
+  class="sr-only bg-val-red px-4 py-2 focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60]"
+  >Skip to content</a
+>
 
 <ng-template #links>
   <a routerLink="/players" routerLinkActive="text-val-red" class="hover:text-val-red">Players</a>
   <a routerLink="/squads" routerLinkActive="text-val-red" class="hover:text-val-red">Squads</a>
   @if (auth.user(); as u) {
-    <a routerLink="/messages" routerLinkActive="text-val-red" class="flex items-center gap-1.5 hover:text-val-red">
+    <a
+      routerLink="/messages"
+      routerLinkActive="text-val-red"
+      class="flex items-center gap-1.5 hover:text-val-red"
+    >
       Messages
       @if (chat.unread(); as n) {
-        <span class="bg-val-red px-1.5 text-xs text-val-bone" [attr.aria-label]="n + ' unread'">{{ n > 99 ? '99+' : n }}</span>
+        <span class="bg-val-red px-1.5 text-xs text-val-bone" [attr.aria-label]="n + ' unread'">{{
+          n > 99 ? '99+' : n
+        }}</span>
       }
     </a>
-    <a [routerLink]="u.onboarded ? ['/u', u.id] : '/onboarding'" class="normal-case tracking-normal text-val-bone/80 hover:text-val-red">
+    <a
+      [routerLink]="u.onboarded ? ['/u', u.id] : '/onboarding'"
+      class="normal-case tracking-normal text-val-bone/80 hover:text-val-red"
+    >
       {{ u.displayName ?? u.email }}
     </a>
-    <a routerLink="/settings" routerLinkActive="text-val-red" class="hover:text-val-red">Settings</a>
-    <button type="button" (click)="logout()" class="text-left uppercase hover:text-val-red">Log out</button>
+    <a routerLink="/settings" routerLinkActive="text-val-red" class="hover:text-val-red"
+      >Settings</a
+    >
+    <button type="button" (click)="logout()" class="text-left uppercase hover:text-val-red">
+      Log out
+    </button>
   } @else {
     <a routerLink="/login" class="clip-angle bg-val-red px-4 py-2 hover:brightness-110">Log in</a>
   }
@@ -22,18 +39,28 @@
 
 <header class="sticky top-0 z-50 border-b border-white/10 bg-val-navy/90 backdrop-blur">
   <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3" aria-label="Main">
-    <a routerLink="/" class="font-display text-2xl tracking-wide text-val-bone">FIVE<span class="text-val-red">STACK</span></a>
+    <a routerLink="/" class="font-display text-2xl tracking-wide text-val-bone"
+      >FIVE<span class="text-val-red">STACK</span></a
+    >
     <div class="hidden items-center gap-5 text-sm font-semibold uppercase tracking-wider md:flex">
       <ng-container *ngTemplateOutlet="links" />
     </div>
     <!-- Mobile: native disclosure, closes after any click inside so navigation hides it -->
     <details #menu class="relative md:hidden">
-      <summary class="flex cursor-pointer list-none items-center gap-2 border border-white/20 px-3 py-1.5 text-sm font-semibold uppercase tracking-wider [&::-webkit-details-marker]:hidden">
+      <summary
+        class="flex cursor-pointer list-none items-center gap-2 border border-white/20 px-3 py-1.5 text-sm font-semibold uppercase tracking-wider [&::-webkit-details-marker]:hidden"
+      >
         Menu
-        @if (chat.unread()) { <span class="size-2 bg-val-red" aria-label="unread messages"></span> }
+        @if (chat.unread()) {
+          <span class="size-2 bg-val-red" aria-label="unread messages"></span>
+        }
       </summary>
-      <div (click)="menu.open = false"
-           class="absolute right-0 mt-2 flex w-56 flex-col items-start gap-4 border border-white/10 bg-val-navy p-4 text-sm font-semibold uppercase tracking-wider shadow-lg">
+      <!-- Delegated close: links and the button inside are the focusable targets, and Enter on them fires click too. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+      <div
+        (click)="menu.open = false"
+        class="absolute right-0 mt-2 flex w-56 flex-col items-start gap-4 border border-white/10 bg-val-navy p-4 text-sm font-semibold uppercase tracking-wider shadow-lg"
+      >
         <ng-container *ngTemplateOutlet="links" />
       </div>
     </details>
@@ -45,17 +72,20 @@
 </main>
 
 <footer class="border-t border-white/10 px-4 py-6 text-center text-xs text-val-bone/60">
-  <nav class="mb-3 flex justify-center gap-4 font-semibold uppercase tracking-wider" aria-label="Legal">
+  <nav
+    class="mb-3 flex justify-center gap-4 font-semibold uppercase tracking-wider"
+    aria-label="Legal"
+  >
     <a routerLink="/privacy" class="hover:text-val-red">Privacy</a>
     <a routerLink="/terms" class="hover:text-val-red">Terms</a>
   </nav>
   <p>
-    FiveStack isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone
-    officially involved in producing or managing Riot Games properties. Riot Games and all associated
-    properties are trademarks or registered trademarks of Riot Games, Inc.
+    FiveStack isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games
+    or anyone officially involved in producing or managing Riot Games properties. Riot Games and all
+    associated properties are trademarks or registered trademarks of Riot Games, Inc.
   </p>
   <p class="mt-2">
-    FiveStack was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games.
-    Riot Games does not endorse or sponsor this project.
+    FiveStack was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot
+    Games. Riot Games does not endorse or sponsor this project.
   </p>
 </footer>

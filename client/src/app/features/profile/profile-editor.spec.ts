@@ -18,13 +18,29 @@ const META: Meta = {
 };
 
 const EMPTY: Profile = {
-  riotName: '', riotTag: '', region: '', servers: [], platform: null, rank: null, peakRank: null, roles: [],
-  agents: [], languages: [], mic: null, modes: [], playstyle: null, playTimes: [], bio: null, showDiscord: false,
+  riotName: '',
+  riotTag: '',
+  region: '',
+  servers: [],
+  platform: null,
+  rank: null,
+  peakRank: null,
+  roles: [],
+  agents: [],
+  languages: [],
+  mic: null,
+  modes: [],
+  playstyle: null,
+  playTimes: [],
+  bio: null,
+  showDiscord: false,
 };
 
 describe('ProfileEditor (wizard)', () => {
   it('blocks Next until required fields are set, then saves meta ids', async () => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     const http = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(ProfileEditor);
     fixture.componentRef.setInput('wizard', true);
@@ -36,7 +52,8 @@ describe('ProfileEditor (wizard)', () => {
     await fixture.whenStable();
 
     const el = fixture.nativeElement as HTMLElement;
-    const button = (text: string) => [...el.querySelectorAll('button')].find((b) => b.textContent!.trim() === text)!;
+    const button = (text: string) =>
+      [...el.querySelectorAll('button')].find((b) => b.textContent!.trim() === text)!;
     const click = async (text: string) => {
       button(text).click();
       await fixture.whenStable();
@@ -53,7 +70,9 @@ describe('ProfileEditor (wizard)', () => {
       await fixture.whenStable();
     };
     const chip = async (text: string) => {
-      const label = [...el.querySelectorAll('label.chip')].find((l) => l.textContent!.trim() === text)!;
+      const label = [...el.querySelectorAll('label.chip')].find(
+        (l) => l.textContent!.trim() === text,
+      )!;
       label.querySelector('input')!.click();
       await fixture.whenStable();
     };
@@ -76,8 +95,13 @@ describe('ProfileEditor (wizard)', () => {
 
     const put = http.expectOne({ method: 'PUT', url: '/api/me/profile' });
     expect(put.request.body).toMatchObject({
-      riotName: 'Ana', riotTag: 'EUW1', region: 'eu', servers: ['frankfurt'], rank: 14,
-      roles: ['controller'], agents: ['omen'],
+      riotName: 'Ana',
+      riotTag: 'EUW1',
+      region: 'eu',
+      servers: ['frankfurt'],
+      rank: 14,
+      roles: ['controller'],
+      agents: ['omen'],
     });
     put.flush(null);
     await fixture.whenStable();

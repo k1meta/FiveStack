@@ -1,4 +1,5 @@
-# Local dev database only. The API and client run with `dotnet run` / `ng serve`.
+# Dev: `docker compose up -d` starts Postgres only; run the API and client with `dotnet run` / `ng serve`.
+# Full stack (production image, used by the E2E tests): `docker compose --profile app up -d --build`, then http://localhost:8080.
 services:
   db:
     image: postgres:17-alpine
@@ -8,5 +9,25 @@ services:
       POSTGRES_DB: fivestack
     ports: ["5432:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fivestack"]
+      interval: 2s
+      retries: 15
+
+  app:
+    profiles: [app]
+    image: fivestack
+    build: .
+    ports: ["8080:8080"]
+    environment:
+      ConnectionStrings__Default: Host=db;Port=5432;Database=fivestack;Username=fivestack;Password=fivestack
+      Demo__Seed: "true"
+      # Every request comes from one IP here (the E2E runner), so lift the per-IP limits.
+      RateLimits__AuthPerMinute: "1000"
+      RateLimits__GlobalPerMinute: "10000"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:

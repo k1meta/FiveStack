@@ -58,7 +58,9 @@ export class ProfilePage {
   }
 
   protected async message() {
-    await this.act(async () => this.router.navigate(['/messages', await this.chat.startDm(this.id())]));
+    await this.act(async () =>
+      this.router.navigate(['/messages', await this.chat.startDm(this.id())]),
+    );
   }
 
   protected async toggleBlock(p: PublicProfile) {

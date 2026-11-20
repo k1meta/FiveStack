@@ -23,7 +23,9 @@ const META: Meta = {
 
 describe('SquadForm', () => {
   it('blocks a min rank above the max rank, then posts meta ids', async () => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+    });
     const http = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(SquadForm);
     fixture.detectChanges();
@@ -53,7 +55,12 @@ describe('SquadForm', () => {
     el.querySelector<HTMLButtonElement>('button[type=submit]')!.click();
     const post = http.expectOne({ method: 'POST', url: '/api/squads' });
     expect(post.request.body).toMatchObject({
-      title: 'Need smokes', mode: 'competitive', region: 'eu', server: 'frankfurt', rankMin: 18, rankMax: 18,
+      title: 'Need smokes',
+      mode: 'competitive',
+      region: 'eu',
+      server: 'frankfurt',
+      rankMin: 18,
+      rankMax: 18,
     });
     post.flush({ id: 'abc' });
     http.verify();

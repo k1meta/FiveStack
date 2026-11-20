@@ -183,6 +183,16 @@ sequenceDiagram
 - `UseForwardedHeaders` is enabled so OAuth redirect URIs use `https` behind Render's proxy.
 - Secrets come only from env vars or `dotnet user-secrets`.
 
+## Testing
+
+| Layer | Tool | What it covers |
+|---|---|---|
+| Unit | Vitest (Angular) | guards, forms, components |
+| Integration | xUnit + `WebApplicationFactory` + Testcontainers | the real API against a throwaway Postgres 17: auth, validation against meta, filters, squad slot races, chat membership/blocks, security headers, rate-limit scope |
+| End to end | Playwright (Chromium) | the production Docker image under its real CSP: player filters, posting and closing a squad, and a DM that arrives live over the WebSocket |
+
+Integration tests share one container per run. Each test makes its own users (unique emails) and filters to its own region, so tests don't step on each other. E2E specs register users through the API, which shares the browser context's cookies, so each spec drives only the UI under test.
+
 ## Frontend
 
 ```

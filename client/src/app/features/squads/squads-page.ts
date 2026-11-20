@@ -65,7 +65,9 @@ export class SquadsPage {
     return { url: '/api/squads', params: Object.fromEntries(q.keys.map((k) => [k, q.getAll(k)])) };
   });
   /** The signed-in player's open post (204 = none). */
-  protected mine = httpResource<Squad | null>(() => (this.auth.user() ? '/api/squads/mine' : undefined));
+  protected mine = httpResource<Squad | null>(() =>
+    this.auth.user() ? '/api/squads/mine' : undefined,
+  );
 
   protected filtered = computed(() => this.query().keys.some((k) => k !== 'page'));
   protected page = computed(() => this.results.value()?.page ?? 1);
@@ -90,12 +92,16 @@ export class SquadsPage {
   /** Changes filters and goes back to page 1. Empty values drop the param. */
   protected set(changes: Params) {
     const queryParams: Params = { page: null };
-    for (const [k, v] of Object.entries(changes)) queryParams[k] = v === '' || v?.length === 0 ? null : v;
+    for (const [k, v] of Object.entries(changes))
+      queryParams[k] = v === '' || v?.length === 0 ? null : v;
     this.router.navigate([], { queryParams, queryParamsHandling: 'merge' });
   }
 
   protected goTo(page: number) {
-    this.router.navigate([], { queryParams: { page: page > 1 ? page : null }, queryParamsHandling: 'merge' });
+    this.router.navigate([], {
+      queryParams: { page: page > 1 ? page : null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   protected regionServers(m: Meta) {

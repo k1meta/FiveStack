@@ -7,9 +7,18 @@ import { LandingPage } from './landing-page';
 
 describe('LandingPage', () => {
   async function ctaHrefs(signedIn: boolean) {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+    });
     if (signedIn) {
-      TestBed.inject(AuthService).user.set({ id: '1', email: 'a@b.c', displayName: 'A', discordUsername: null, onboarded: true, logins: [] });
+      TestBed.inject(AuthService).user.set({
+        id: '1',
+        email: 'a@b.c',
+        displayName: 'A',
+        discordUsername: null,
+        onboarded: true,
+        logins: [],
+      });
     }
     const fixture = TestBed.createComponent(LandingPage);
     fixture.detectChanges();

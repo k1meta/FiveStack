@@ -4,17 +4,26 @@
     @let m = meta.meta.value();
 
     <ng-template #player let-p>
-      <div class="flex flex-wrap items-center justify-between gap-3 border border-white/10 bg-val-ink p-3">
+      <div
+        class="flex flex-wrap items-center justify-between gap-3 border border-white/10 bg-val-ink p-3"
+      >
         <a [routerLink]="['/u', p.id]" class="min-w-0 hover:text-val-red">
-          <span class="font-semibold">{{ p.riotName }}<span class="text-val-bone/60">#{{ p.riotTag }}</span></span>
-          @if (p.isDemo) { <span class="demo-chip" title="Sample player for the live demo">Demo</span> }
+          <span class="font-semibold"
+            >{{ p.riotName }}<span class="text-val-bone/60">#{{ p.riotTag }}</span></span
+          >
+          @if (p.isDemo) {
+            <span class="demo-chip" title="Sample player for the live demo">Demo</span>
+          }
           <span class="block text-xs text-val-bone/60">{{ meta.names(m?.roles, p.roles) }}</span>
         </a>
         <div class="flex items-center gap-3">
           <app-rank-badge [tier]="p.rank" />
           @if (p.discordUsername; as discord) {
-            <button type="button" (click)="copyDiscord(discord)"
-                    class="border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider hover:border-val-teal">
+            <button
+              type="button"
+              (click)="copyDiscord(discord)"
+              class="border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider hover:border-val-teal"
+            >
               {{ copied() === discord ? 'Copied!' : 'Copy Discord' }}
             </button>
           }
@@ -25,7 +34,9 @@
     <header class="border-b border-white/10 pb-6">
       <p class="text-sm uppercase tracking-wider text-val-bone/60">
         {{ meta.name(m?.modes, s.mode) }} · {{ meta.name(m?.regions, s.region) }}
-        @if (s.server) { · {{ meta.name(meta.servers(), s.server) }} }
+        @if (s.server) {
+          · {{ meta.name(meta.servers(), s.server) }}
+        }
       </p>
       <h1 class="mt-1 font-display text-4xl uppercase tracking-wide sm:text-5xl">{{ s.title }}</h1>
       <p class="mt-2 text-sm" aria-live="polite">
@@ -45,7 +56,9 @@
         </div>
         <div>
           <dt class="field-label text-val-bone/60">Roles</dt>
-          <dd class="mt-1">{{ s.neededRoles.length ? meta.names(m?.roles, s.neededRoles) : 'Any role' }}</dd>
+          <dd class="mt-1">
+            {{ s.neededRoles.length ? meta.names(m?.roles, s.neededRoles) : 'Any role' }}
+          </dd>
         </div>
         <div>
           <dt class="field-label text-val-bone/60">Rank</dt>
@@ -60,7 +73,9 @@
             <dt class="field-label text-val-bone/60">Agents wanted</dt>
             <dd class="mt-2 flex flex-wrap gap-2">
               @for (id of s.neededAgents; track id) {
-                @if (meta.agent(id); as a) { <img [src]="a.icon" [alt]="a.name" [title]="a.name" class="size-10 bg-val-ink" /> }
+                @if (meta.agent(id); as a) {
+                  <img [src]="a.icon" [alt]="a.name" [title]="a.name" class="size-10 bg-val-ink" />
+                }
               }
             </dd>
           </div>
@@ -68,7 +83,9 @@
       </dl>
 
       <div class="space-y-8">
-        @if (failure(); as f) { <p class="text-sm text-val-red" role="alert">{{ f }}</p> }
+        @if (failure(); as f) {
+          <p class="text-sm text-val-red" role="alert">{{ f }}</p>
+        }
 
         @if (isHost()) {
           @if (s.open) {
@@ -80,12 +97,20 @@
                     <li class="space-y-2">
                       <ng-container *ngTemplateOutlet="player; context: { $implicit: r.player }" />
                       <div class="flex gap-2">
-                        <button type="button" [disabled]="busy()" (click)="decide(r.player.id, 'accepted')"
-                                class="clip-angle bg-val-red px-4 py-1.5 text-xs font-semibold uppercase tracking-wider hover:brightness-110 disabled:opacity-50">
+                        <button
+                          type="button"
+                          [disabled]="busy()"
+                          (click)="decide(r.player.id, 'accepted')"
+                          class="clip-angle bg-val-red px-4 py-1.5 text-xs font-semibold uppercase tracking-wider hover:brightness-110 disabled:opacity-50"
+                        >
                           Accept
                         </button>
-                        <button type="button" [disabled]="busy()" (click)="decide(r.player.id, 'declined')"
-                                class="border border-white/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider hover:border-val-teal disabled:opacity-50">
+                        <button
+                          type="button"
+                          [disabled]="busy()"
+                          (click)="decide(r.player.id, 'declined')"
+                          class="border border-white/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider hover:border-val-teal disabled:opacity-50"
+                        >
                           Decline
                         </button>
                       </div>
@@ -93,26 +118,40 @@
                   }
                 </ul>
               } @else {
-                <p class="mt-1 text-sm text-val-bone/60">No requests yet. New ones show up here live.</p>
+                <p class="mt-1 text-sm text-val-bone/60">
+                  No requests yet. New ones show up here live.
+                </p>
               }
             </div>
-            <button type="button" [disabled]="busy()" (click)="close()"
-                    class="border border-white/20 px-4 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-red disabled:opacity-50">
+            <button
+              type="button"
+              [disabled]="busy()"
+              (click)="close()"
+              class="border border-white/20 px-4 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-red disabled:opacity-50"
+            >
               Close squad
             </button>
           }
         } @else if (s.host.isDemo) {
-          <p class="text-val-bone/70">Demo squad: sign-ups are off. Post your own or find a real one on the board.</p>
+          <p class="text-val-bone/70">
+            Demo squad: sign-ups are off. Post your own or find a real one on the board.
+          </p>
         } @else if (!auth.user()) {
           @if (s.open) {
-            <a [routerLink]="loginUrl()" class="clip-angle inline-block bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110">
+            <a
+              [routerLink]="loginUrl()"
+              class="clip-angle inline-block bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110"
+            >
               Log in to join
             </a>
           }
         } @else if (!auth.user()?.onboarded) {
           @if (s.open) {
-            <a routerLink="/onboarding" [queryParams]="{ returnUrl: '/squads/' + s.id }"
-               class="clip-angle inline-block bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110">
+            <a
+              routerLink="/onboarding"
+              [queryParams]="{ returnUrl: '/squads/' + s.id }"
+              class="clip-angle inline-block bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110"
+            >
               Set up your profile to join
             </a>
           }
@@ -120,17 +159,31 @@
           @switch (d.myStatus) {
             @case ('pending') {
               <p>Request sent. The host will answer here.</p>
-              <button type="button" [disabled]="busy()" (click)="cancel()"
-                      class="border border-white/20 px-4 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-red disabled:opacity-50">
+              <button
+                type="button"
+                [disabled]="busy()"
+                (click)="cancel()"
+                class="border border-white/20 px-4 py-2 text-sm font-semibold uppercase tracking-wider hover:border-val-red disabled:opacity-50"
+              >
                 Cancel request
               </button>
             }
-            @case ('accepted') { <p class="text-val-teal">You're in. Say hi in the squad chat, or add the squad on Discord below.</p> }
-            @case ('declined') { <p class="text-val-bone/60">The host passed on this one. Try another squad.</p> }
+            @case ('accepted') {
+              <p class="text-val-teal">
+                You're in. Say hi in the squad chat, or add the squad on Discord below.
+              </p>
+            }
+            @case ('declined') {
+              <p class="text-val-bone/60">The host passed on this one. Try another squad.</p>
+            }
             @default {
               @if (s.open) {
-                <button type="button" [disabled]="busy()" (click)="join()"
-                        class="clip-angle bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110 disabled:opacity-50">
+                <button
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="join()"
+                  class="clip-angle bg-val-red px-6 py-3 font-semibold uppercase tracking-wider hover:brightness-110 disabled:opacity-50"
+                >
                   Ask to join
                 </button>
               }
@@ -142,8 +195,10 @@
           <div class="flex items-center justify-between gap-3">
             <h2 class="field-label text-val-bone/60">Squad</h2>
             @if (d.conversationId; as chat) {
-              <a [routerLink]="['/messages', chat]"
-                 class="clip-angle bg-val-red px-4 py-1.5 text-xs font-semibold uppercase tracking-wider hover:brightness-110">
+              <a
+                [routerLink]="['/messages', chat]"
+                class="clip-angle bg-val-red px-4 py-1.5 text-xs font-semibold uppercase tracking-wider hover:brightness-110"
+              >
                 Open squad chat
               </a>
             }
@@ -162,7 +217,9 @@
     </div>
   } @else if (squad.error()) {
     <h1 class="font-display text-4xl uppercase">Squad not found</h1>
-    <p class="mt-2 text-val-bone/70"><a routerLink="/squads" class="text-val-teal hover:underline">Back to the board</a></p>
+    <p class="mt-2 text-val-bone/70">
+      <a routerLink="/squads" class="text-val-teal hover:underline">Back to the board</a>
+    </p>
   } @else {
     <p class="text-val-bone/60">Loading…</p>
   }

@@ -45,9 +45,11 @@ export class SquadPage {
 
   constructor() {
     // The hub pushes SquadChanged to the host on a new/cancelled request and to a player when the host answers.
-    inject(ChatService).squadChanged.pipe(takeUntilDestroyed()).subscribe((postId) => {
-      if (postId === this.id()) this.squad.reload();
-    });
+    inject(ChatService)
+      .squadChanged.pipe(takeUntilDestroyed())
+      .subscribe((postId) => {
+        if (postId === this.id()) this.squad.reload();
+      });
   }
 
   protected join() {
@@ -78,7 +80,9 @@ export class SquadPage {
   }
 
   protected loginUrl() {
-    return this.router.createUrlTree(['/login'], { queryParams: { returnUrl: `/squads/${this.id()}` } });
+    return this.router.createUrlTree(['/login'], {
+      queryParams: { returnUrl: `/squads/${this.id()}` },
+    });
   }
 
   private async act(call: Observable<unknown>) {
