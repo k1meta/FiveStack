@@ -15,7 +15,7 @@ COPY server/ ./
 RUN dotnet publish FiveStack.Api -c Release --no-restore -o /app
 
 # 3) Runtime: API serves the Angular build from wwwroot (same origin => cookie auth, no CORS)
-FROM mcr.microsoft.com/dotnet/aspnet:10.0
+FROM mcr.microsoft.com/dotnet/aspnet:11.0
 WORKDIR /app
 COPY --from=server /app ./
 COPY --from=client /src/client/dist/client/browser ./wwwroot
