@@ -77,12 +77,17 @@ npm start
 
 OAuth (optional in dev): see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#oauth-apps) and set secrets with `dotnet user-secrets`.
 
+Or run the production image with one command: `docker compose --profile app up -d --build`, then open http://localhost:8080.
+
 ## Tests
 
 ```bash
 cd server && dotnet test          # integration tests spin up Postgres with Testcontainers
 cd client && npm test -- --watch=false
+cd client && npm run e2e          # Playwright, against `docker compose --profile app up -d --build`
 ```
+
+Every PR runs format and lint checks, a warnings-as-errors build (which also fails on vulnerable NuGet packages), `npm audit`, a migration drift check, unit and integration tests with a coverage summary, and Playwright E2E against the production Docker image. Render deploys `main` only after all of it passes.
 
 ## Project docs
 
