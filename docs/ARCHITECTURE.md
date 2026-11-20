@@ -170,12 +170,22 @@ sequenceDiagram
 - Presence: an in-memory map of userId to hub connection count. A player is "online now" while connected, **or** for 5 minutes after an authenticated API call (`LastActiveAt`, stamped at most once a minute by middleware). `LastActiveAt` also drives the player finder's "recently active" sort. The in-memory map works only with a single instance. Scaling out requires a Redis backplane and Redis-backed presence.
 - The client lazy-loads `@microsoft/signalr` on sign-in, so signed-out visitors don't download it.
 
+## Observability
+
+OpenTelemetry exports traces, metrics and logs over OTLP. Production sends them to Grafana Cloud (Tempo, Prometheus, Loki). Locally, `docker compose --profile otel` runs the same stack (`grafana/otel-lgtm`). The SDK is only registered when `OTEL_EXPORTER_OTLP_ENDPOINT` is set, so dev and tests run without it.
+
+- **Traces:** every API request (ASP.NET Core), with child spans for each SQL command (Npgsql) and outgoing HTTP call (OAuth, email). `/api/health` pings are filtered out.
+- **Metrics:** request rate and latency per route, Kestrel/SignalR connections, rate-limiter decisions, Identity sign-ins, DB pool and query time, GC/CPU/thread pool. Product metrics come from `AppMetrics.cs` (meter `FiveStack`): `fivestack.messages.sent` (tag `kind`), `fivestack.squads.created`, `fivestack.squads.join_requests`, and the `fivestack.users.online` gauge, read from `Presence`.
+- **Logs:** JSON console logs in production, with the trace and span ids in scopes, so a Render log line leads to its trace. One line per API request (method, path, status, duration) via `AddHttpLogging`. SQL text stays out of the logs at Warning, because the trace spans already carry it.
+- **Privacy:** client IP addresses aren't recorded, which is the semantic-convention default. Telemetry has no emails or message bodies.
+- **Dashboard:** `docs/observability/grafana-dashboard.json` (players online, request rate, p95 per route, 5xx share, rate-limited requests, DB p95, product activity, connections, memory). It uses a datasource variable, so it imports into any Grafana.
+
 ## Security checklist
 
 - Membership is checked on every conversation read, send and mark-read; a non-member gets the same 404 as a missing conversation. Blocks are enforced on DM creation and send.
 - Rate limiting (`AddRateLimiter`): every `/api` call is capped per IP (300/min). On top of that, the sign-in flows (Identity endpoints, external login) get 20/min per IP, squad creation 10/hour per user, message send 30/min per user and starting a DM 30/hour per user. `/api/auth/me` and `/providers` aren't in the sign-in limit, because the SPA calls them on every page load. A 429 carries `Retry-After`.
 - Public profiles never include the email or `DisplayName`, which is the real name from a Google account. Discord shows only when the player opts in.
-- Errors are RFC 9457 problem details (`AddProblemDetails`, `UseExceptionHandler`, `UseStatusCodePages`) with a `traceId`. Production never returns stack traces.
+- Errors are RFC 9457 problem details (`AddProblemDetails`, `UseExceptionHandler`, `UseStatusCodePages`) with a `traceId` that matches the OpenTelemetry trace. Production never returns stack traces.
 - Security headers on every response: a strict CSP (`default-src 'self'`, so no inline or third-party scripts; images also from `media.valorant-api.com`; `frame-ancestors 'none'`), `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, plus HSTS outside Development. Styles allow `'unsafe-inline'` because Angular injects component `<style>` tags. `/scalar` is exempt (its page runs an inline script). Critical-CSS inlining is off in `angular.json` because its loader is an inline script the CSP would block.
 - The container runs as the image's non-root `app` user.
 - Input lengths are capped with DataAnnotations. Angular escapes all bound text.

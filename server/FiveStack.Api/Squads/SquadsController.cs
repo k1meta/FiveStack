@@ -148,6 +148,7 @@ public class SquadsController(AppDbContext db, UserManager<AppUser> users, IHubC
         // The squad chat starts with the host; each accepted player is added in Decide.
         db.Conversations.Add(new Conversation { SquadPost = post, CreatedAt = now, Members = [new() { UserId = me, LastReadAt = now }] });
         await db.SaveChangesAsync();
+        AppMetrics.SquadsCreated.Add(1, new("mode", post.Mode), new("region", post.Region));
         return CreatedAtAction(nameof(Get), new { id = post.Id }, new { post.Id });
     }
 
@@ -181,6 +182,7 @@ public class SquadsController(AppDbContext db, UserManager<AppUser> users, IHubC
         {
             return Problem("You already asked to join.", statusCode: 409);
         }
+        AppMetrics.JoinRequests.Add(1);
         await SquadChanged(post.HostId, id);
         return NoContent();
     }

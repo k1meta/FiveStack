@@ -39,6 +39,7 @@
 | Auth | Cookie auth (same origin), Google + Discord OAuth |
 | Tests | xUnit + WebApplicationFactory + Testcontainers (real Postgres), Vitest (Angular) |
 | Infra | Docker (single image), Render (app), Neon (Postgres), GitHub Actions CI/CD |
+| Observability | OpenTelemetry (traces, metrics, logs) to Grafana Cloud, JSON logs with trace ids |
 
 ```mermaid
 flowchart LR
