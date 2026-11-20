@@ -35,7 +35,7 @@ const prose = 'mx-auto block max-w-3xl px-4 py-12 [&_h1]:font-display [&_h1]:tex
     <h2>Third parties</h2>
     <ul>
       <li>Google and Discord, only if you choose to sign in with them.</li>
-      <li>valorant-api.com serves agent and rank icons, and Google Fonts serves the fonts. Your browser loads these directly.</li>
+      <li>valorant-api.com serves agent and rank icons. Your browser loads these directly. Fonts are served by FiveStack itself.</li>
       <li>The app is hosted on Render and the database on Neon.</li>
     </ul>
     <p>We don't sell or share your data with anyone else.</p>

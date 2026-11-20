@@ -176,6 +176,7 @@ sequenceDiagram
 - Rate limiting (`AddRateLimiter`): every `/api` call is capped per IP (300/min). On top of that, the sign-in flows (Identity endpoints, external login) get 20/min per IP, squad creation 10/hour per user, message send 30/min per user and starting a DM 30/hour per user. `/api/auth/me` and `/providers` aren't in the sign-in limit, because the SPA calls them on every page load. A 429 carries `Retry-After`.
 - Public profiles never include the email or `DisplayName`, which is the real name from a Google account. Discord shows only when the player opts in.
 - Errors are RFC 9457 problem details (`AddProblemDetails`, `UseExceptionHandler`, `UseStatusCodePages`) with a `traceId`. Production never returns stack traces.
+- Security headers on every response: a strict CSP (`default-src 'self'`, so no inline or third-party scripts; images also from `media.valorant-api.com`; `frame-ancestors 'none'`), `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, plus HSTS outside Development. Styles allow `'unsafe-inline'` because Angular injects component `<style>` tags. `/scalar` is exempt (its page runs an inline script). Critical-CSS inlining is off in `angular.json` because its loader is an inline script the CSP would block.
 - The container runs as the image's non-root `app` user.
 - Input lengths are capped with DataAnnotations. Angular escapes all bound text.
 - `SameSite=Lax` cookie + JSON-only request bodies mitigate CSRF.
@@ -194,4 +195,5 @@ client/src/app/
 - Standalone components, signals for state, lazy-loaded feature routes.
 - Search filters are serialized to URL query params, so a search is shareable and back/forward works.
 - Landing art (Valorant fan art generated with Higgsfield, using official agent portraits and map splashes from valorant-api.com as references) lives in `client/public/assets/` as WebP: `hero/hero.webp` + `hero-960.webp`, `hero/og.jpg` (1200×630 crop for link previews) and `roles/{roleId}.webp`, keyed by the meta role id. The hero's slow pan/zoom is a CSS animation (`animate-hero-pan` in `styles.css`) behind `motion-safe:`, so reduced-motion users get the still.
+- Fonts (Anton, Inter; OFL, from Fontsource) are self-hosted in `client/public/fonts/` with `unicode-range` subsets. The CSP can then stay `font-src 'self'`, and no visitor IP goes to Google Fonts.
 - Below `md`, the header nav collapses into a native `<details>` menu. A skip link jumps to `<main>`.

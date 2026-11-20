@@ -99,7 +99,29 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-if (!app.Environment.IsDevelopment()) app.UseExceptionHandler(); // Development keeps the detailed error page
+// Security headers on every response. Set in OnStarting so error responses (which clear headers) keep them too.
+// Styles need 'unsafe-inline' for Angular's component <style> tags; scripts stay 'self' only.
+const string csp = "default-src 'self'; img-src 'self' data: https://media.valorant-api.com; style-src 'self' 'unsafe-inline'; " +
+    "font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+app.Use(async (ctx, next) =>
+{
+    ctx.Response.OnStarting(() =>
+    {
+        var h = ctx.Response.Headers;
+        h.XContentTypeOptions = "nosniff";
+        h.XFrameOptions = "DENY";
+        h["Referrer-Policy"] = "strict-origin-when-cross-origin";
+        h["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+        if (!ctx.Request.Path.StartsWithSegments("/scalar")) h.ContentSecurityPolicy = csp; // Scalar runs an inline script
+        return Task.CompletedTask;
+    });
+    await next();
+});
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts(); // only sent on HTTPS requests; Render's proxy forwards the scheme
+    app.UseExceptionHandler(); // Development keeps the detailed error page
+}
 app.UseStatusCodePages();
 
 app.MapOpenApi();
