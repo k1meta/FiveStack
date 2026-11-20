@@ -7,7 +7,7 @@ COPY client/ ./
 RUN npm run build
 
 # 2) Publish .NET API. Restore from the project file alone first, so source edits reuse the cached restore layer.
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS server
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS server
 WORKDIR /src
 COPY server/FiveStack.Api/FiveStack.Api.csproj FiveStack.Api/
 RUN dotnet restore FiveStack.Api
