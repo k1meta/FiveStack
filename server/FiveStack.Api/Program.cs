@@ -79,6 +79,16 @@ builder.Services.AddDataProtection()
     .PersistKeysToDbContext<AppDbContext>()
     .SetApplicationName("FiveStack");
 
+// Per-IP limits need the visitor's IP. Behind Render, RemoteIpAddress is one of several internal load-balancer
+// addresses, and the left end of X-Forwarded-For is whatever the client sent. Cloudflare (in front of Render) sets
+// True-Client-IP and rejects requests that bring their own (403), so production keys on that header
+// (RateLimits:ClientIpHeader). Without it (local dev, tests) the socket address is used.
+var clientIpHeader = config["RateLimits:ClientIpHeader"];
+string ClientIp(HttpContext ctx) =>
+    (clientIpHeader is { Length: > 0 } ? ctx.Request.Headers[clientIpHeader].ToString() : "") is { Length: > 0 } ip
+        ? ip
+        : ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
 // Tests raise both limits: they all share one "IP".
 var authPerMinute = config.GetValue("RateLimits:AuthPerMinute", 20);
 var globalPerMinute = config.GetValue("RateLimits:GlobalPerMinute", 300);
@@ -94,11 +104,11 @@ builder.Services.AddRateLimiter(o =>
     // Every API call, per IP, on top of the named policies below. Caps scraping of the public search endpoints.
     o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
         ctx.Request.Path.StartsWithSegments("/api")
-            ? RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            ? RateLimitPartition.GetFixedWindowLimiter(ClientIp(ctx),
                 _ => new FixedWindowRateLimiterOptions { PermitLimit = globalPerMinute, Window = TimeSpan.FromMinutes(1) })
             : RateLimitPartition.GetNoLimiter(""));
     o.AddPolicy("auth", ctx => RateLimitPartition.GetFixedWindowLimiter(
-        ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        ClientIp(ctx),
         _ => new FixedWindowRateLimiterOptions { PermitLimit = authPerMinute, Window = TimeSpan.FromMinutes(1) }));
     // Squad posts: per signed-in user (the endpoint requires auth).
     o.AddPolicy("squads", ctx => RateLimitPartition.GetFixedWindowLimiter(
@@ -205,17 +215,7 @@ app.Use(async (ctx, next) =>
     await next();
 });
 
-app.MapGet("/api/health", (HttpContext ctx, ILogger<Program> log) =>
-{
-    // TEMPORARY (remove in the follow-up PR): shows which proxy headers Render sends, to key per-IP rate limits correctly.
-    // Only requests with ?ipcheck log anything, so no visitor's IP is recorded.
-    if (ctx.Request.Query.ContainsKey("ipcheck"))
-        log.LogWarning("ipcheck remote={Remote} xff={Xff} xff-original={XffOriginal} true-client-ip={TrueClientIp} cf-connecting-ip={CfIp}",
-            ctx.Connection.RemoteIpAddress, ctx.Request.Headers["X-Forwarded-For"].ToString(),
-            ctx.Request.Headers["X-Original-For"].ToString(), ctx.Request.Headers["True-Client-IP"].ToString(),
-            ctx.Request.Headers["CF-Connecting-IP"].ToString());
-    return Results.Ok(new { status = "ok" });
-});
+app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
 app.MapGet("/api/meta", () => GameData.All);
 app.MapGroup("/api/auth").MapIdentityApi<AppUser>().RequireRateLimiting("auth"); // login with ?useCookies=true
 app.MapControllers();
@@ -236,6 +236,7 @@ static string? PgUrl(string? url)
         Host = u.Host, Port = u.Port > 0 ? u.Port : 5432, Database = u.AbsolutePath.Trim('/'),
         Username = Uri.UnescapeDataString(user[0]), Password = user.Length > 1 ? Uri.UnescapeDataString(user[1]) : null,
         SslMode = SslMode.Require, ChannelBinding = ChannelBinding.Require,
+        GssEncryptionMode = GssEncryptionMode.Disable, // Neon doesn't do Kerberos; skips a failed libgssapi load on every start
     }.ConnectionString;
 }
 
