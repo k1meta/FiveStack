@@ -33,6 +33,26 @@ public class AuthTests(ApiFactory factory)
     }
 
     [Fact]
+    public async Task Sign_in_limit_is_per_visitor_ip_from_the_edge_header()
+    {
+        using var strict = factory.WithWebHostBuilder(b => b.UseSetting("RateLimits:AuthPerMinute", "2"));
+        HttpClient From(string ip)
+        {
+            var c = strict.CreateClient();
+            c.DefaultRequestHeaders.Add("True-Client-IP", ip); // set by Cloudflare in front of Render
+            return c;
+        }
+        var creds = new { email = "nobody@example.com", password = "Wr0ng-pass" };
+
+        var attacker = From("203.0.113.7");
+        for (var i = 0; i < 2; i++) await attacker.PostAsJsonAsync("/api/auth/login", creds);
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await attacker.PostAsJsonAsync("/api/auth/login", creds)).StatusCode);
+
+        // Same server, different visitor: their own budget, not the attacker's.
+        Assert.Equal(HttpStatusCode.Unauthorized, (await From("198.51.100.9").PostAsJsonAsync("/api/auth/login", creds)).StatusCode);
+    }
+
+    [Fact]
     public async Task Forgotten_password_is_reset_with_the_emailed_code()
     {
         const string email = "forgetful@example.com";

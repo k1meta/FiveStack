@@ -38,7 +38,7 @@ Migrations run automatically on app startup. To run the API locally against Neon
 
    The app won't start without the required variables, so set them **before** deploying a version that needs them. Render keeps the old version running when the new one fails its health check.
 
-4. Settings > Build & Deploy > Auto-Deploy: **After CI Checks Pass**. Render then deploys `main` only after the GitHub Actions CI run is green.
+4. Settings > Build & Deploy > Auto-Deploy: **On Commit**. The `main` ruleset only accepts PRs whose `client`, `server` and `e2e` checks passed, so every commit on `main` is already green. ("After CI Checks Pass" never fired here: it waits on the commit's combined status, which stays `pending` because CI posts check runs, not statuses.)
 5. Set the GitHub Actions **variable** `APP_URL` (e.g. `https://fivestack.onrender.com`) so `keep-warm.yml` pings the app every 10 minutes. Render's free tier sleeps after 15 minutes of inactivity. One always-on service uses ~744 of the 750 free hours per month.
 
 ## 3. Domain and email: Render + Resend
@@ -96,7 +96,8 @@ OAuth buttons are hidden when a provider has no ClientId configured, so the app 
 
 ## Gotchas
 
-- **Forwarded headers:** Render terminates TLS. `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` (set in the Dockerfile) trusts `X-Forwarded-For/Proto`, so OAuth builds `https://` redirect URIs and the per-IP rate limits see the visitor's IP. To check the IP part after a deploy, send 21 bad logins in a minute from one network: the last one should get 429. A login from another network (e.g. your phone on mobile data) right after should still get 401, not 429. If it gets 429 too, every visitor shares one partition: set `ForwardedHeadersOptions.ForwardLimit` to the number of proxies in front of the app.
+- **Forwarded headers:** Render terminates TLS. `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` (set in the Dockerfile) trusts `X-Forwarded-Proto`, so OAuth builds `https://` redirect URIs.
+- **Client IP for rate limits:** requests reach the app through Cloudflare and a Render load balancer. `RemoteIpAddress` is one of several internal load-balancer addresses, and the left end of `X-Forwarded-For` is whatever the client sent, so neither identifies a visitor. Cloudflare sets `True-Client-IP` and answers 403 to requests that send their own, so the per-IP limits key on it (`RateLimits:ClientIpHeader` in `appsettings.json`). To check after a deploy, send 21 bad logins in a minute from one machine: number 21 should get 429, and not later.
 - **Data Protection keys** are stored in Postgres. Without that, every restart would invalidate all login cookies.
 - **Cold starts:** without the keep-warm ping, the first request after idle takes ~30–60s.
 - **Custom domain (optional):** add it in Render and update both OAuth redirect URIs.
