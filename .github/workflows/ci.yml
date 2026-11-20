@@ -51,7 +51,9 @@ jobs:
         run: dotnet ef migrations has-pending-model-changes --project FiveStack.Api --no-build
       - name: Test (Testcontainers starts Postgres in Docker)
         run: dotnet test --no-build --collect:"XPlat Code Coverage" --results-directory ../coverage
+      # The coverage summary is informational: a failed tool download must not block merges and deploys.
       - name: Coverage report
+        continue-on-error: true
         uses: danielpalme/ReportGenerator-GitHub-Action@v5
         with:
           reports: coverage/**/coverage.cobertura.xml
@@ -59,6 +61,7 @@ jobs:
           reporttypes: MarkdownSummaryGithub
           classfilters: "-FiveStack.Api.Data.Migrations.*"
       - run: cat ../coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+        continue-on-error: true
 
   # Builds the production image (so a broken Dockerfile fails here, not on Render) and runs Playwright against it.
   e2e:
