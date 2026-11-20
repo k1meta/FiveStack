@@ -59,7 +59,7 @@
 - [x] CI gates: format, lint, warnings as errors, migration drift, coverage, Docker build, Playwright E2E, Dependabot, CodeQL
 - [x] Observability: OpenTelemetry traces/metrics/logs to Grafana Cloud, domain metrics, JSON logs
 - [x] Email confirmation + password reset (Resend), host-header-safe links, verified provider emails only
-- [ ] Custom domain + Resend domain verification + production env vars (manual, see DEPLOYMENT.md)
+- [x] Custom domain (five-stack.dev), Resend domain verification, production env vars, contact address via Cloudflare Email Routing
 - [x] TOTP two-factor authentication (Settings setup with QR + recovery codes; password and Google/Discord sign-ins)
 
 ## M9: Auth UX (next)
