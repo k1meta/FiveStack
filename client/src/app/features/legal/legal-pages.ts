@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-// TODO(M6): replace with the project contact address before shipping.
-const CONTACT_EMAIL = 'contact@example.com';
-const UPDATED = 'November 14, 2026';
+const CONTACT_EMAIL = 'contact@five-stack.dev';
+const UPDATED = 'November 20, 2026';
 
 const prose =
   'mx-auto block max-w-3xl px-4 py-12 [&_h1]:font-display [&_h1]:text-5xl [&_h1]:uppercase [&_h1]:tracking-wide ' +
