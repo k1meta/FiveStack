@@ -41,4 +41,38 @@ describe('AuthPage', () => {
       twoFactorCode: '123456',
     });
   });
+
+  it('on sign-up, needs the password twice and can reveal both fields', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+    });
+    const fixture = TestBed.createComponent(AuthPage);
+    fixture.componentRef.setInput('mode', 'register');
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const type = async (selector: string, value: string) => {
+      const input = el.querySelector<HTMLInputElement>(selector)!;
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+    };
+    const submit = el.querySelector<HTMLButtonElement>('button[type=submit]')!;
+    const passwords = () => [
+      ...el.querySelectorAll<HTMLInputElement>('input[autocomplete=new-password]'),
+    ];
+
+    await type('input[type=email]', 'ana@example.com');
+    await type('#password', 'Passw0rd!');
+    await type('[formcontrolname=confirm]', 'Passw0rd?');
+    expect(submit.disabled).toBe(true);
+    expect(el.textContent).toContain("Passwords don't match.");
+
+    await type('[formcontrolname=confirm]', 'Passw0rd!');
+    expect(submit.disabled).toBe(false);
+
+    expect(passwords().map((i) => i.type)).toEqual(['password', 'password']);
+    el.querySelector<HTMLButtonElement>('button[aria-label="Show password"]')!.click();
+    await fixture.whenStable();
+    expect(passwords().map((i) => i.type)).toEqual(['text', 'text']);
+  });
 });

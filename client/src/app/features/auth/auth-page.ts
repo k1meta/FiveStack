@@ -1,9 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal, signal } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
-import { errorMessage, problemDetail, safeReturnUrl } from '../../core/util';
+import { errorMessage, matchPasswords, problemDetail, safeReturnUrl } from '../../core/util';
+import { ProviderIcon } from '../../shared/provider-icon';
 
 const SERVER_ERRORS: Record<string, string> = {
   'email-in-use':
@@ -15,7 +16,7 @@ const SERVER_ERRORS: Record<string, string> = {
 /** Login and register share one page; the route's `data.mode` picks which. */
 @Component({
   selector: 'app-auth-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ProviderIcon, ReactiveFormsModule, RouterLink],
   templateUrl: './auth-page.html',
 })
 export class AuthPage {
@@ -44,10 +45,25 @@ export class AuthPage {
 
   protected safeReturnUrl = computed(() => safeReturnUrl(this.returnUrl()));
 
-  protected form = inject(FormBuilder).nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
-  });
+  protected showPassword = signal(false);
+
+  protected form = inject(FormBuilder).nonNullable.group(
+    {
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirm: [''],
+    },
+    { validators: matchPasswords },
+  );
+
+  constructor() {
+    // Only sign-up repeats the password.
+    effect(() => {
+      const confirm = this.form.controls.confirm;
+      if (this.mode() === 'register') confirm.enable();
+      else confirm.disable();
+    });
+  }
 
   protected externalUrl(provider: string) {
     return `/api/auth/external/${provider}?returnUrl=${encodeURIComponent(this.safeReturnUrl())}`;

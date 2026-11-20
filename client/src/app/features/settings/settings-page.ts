@@ -4,12 +4,13 @@ import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { errorMessage } from '../../core/util';
+import { ProviderIcon } from '../../shared/provider-icon';
 import { ProfileEditor } from '../profile/profile-editor';
 import { TwoFactorSettings } from './two-factor-settings';
 
 @Component({
   selector: 'app-settings-page',
-  imports: [ProfileEditor, TwoFactorSettings],
+  imports: [ProfileEditor, ProviderIcon, TwoFactorSettings],
   templateUrl: './settings-page.html',
 })
 export class SettingsPage {

@@ -73,20 +73,48 @@
           class="mt-1 w-full border border-white/20 bg-val-ink px-3 py-2 focus:border-val-teal"
         />
       </label>
-      <label class="block">
-        <span class="text-sm font-semibold uppercase tracking-wider">Password</span>
-        <input
-          type="password"
-          formControlName="password"
-          [attr.autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'"
-          class="mt-1 w-full border border-white/20 bg-val-ink px-3 py-2 focus:border-val-teal"
-        />
+      <div>
+        <label for="password" class="text-sm font-semibold uppercase tracking-wider"
+          >Password</label
+        >
+        <div class="relative mt-1">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            [attr.autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'"
+            [attr.aria-describedby]="mode() === 'register' ? 'password-hint' : null"
+            class="w-full border border-white/20 bg-val-ink px-3 py-2 pr-16 focus:border-val-teal"
+          />
+          <button
+            type="button"
+            (click)="showPassword.set(!showPassword())"
+            [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+            class="absolute inset-y-0 right-0 px-3 text-xs font-semibold uppercase tracking-wider text-val-teal hover:underline"
+          >
+            {{ showPassword() ? 'Hide' : 'Show' }}
+          </button>
+        </div>
         @if (mode() === 'register') {
-          <span class="mt-1 block text-xs text-val-bone/60"
+          <span id="password-hint" class="mt-1 block text-xs text-val-bone/60"
             >6+ characters with an uppercase letter, a lowercase letter, a digit and a symbol.</span
           >
         }
-      </label>
+      </div>
+      @if (mode() === 'register') {
+        <label class="block">
+          <span class="text-sm font-semibold uppercase tracking-wider">Confirm password</span>
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="confirm"
+            autocomplete="new-password"
+            class="mt-1 w-full border border-white/20 bg-val-ink px-3 py-2 focus:border-val-teal"
+          />
+          @if (form.hasError('mismatch') && form.controls.confirm.dirty) {
+            <span class="field-error">Passwords don't match.</span>
+          }
+        </label>
+      }
       @if (mode() === 'login') {
         <a routerLink="/forgot-password" class="block text-xs text-val-teal hover:underline"
           >Forgot your password?</a
@@ -108,8 +136,9 @@
       @for (p of auth.providers(); track p) {
         <a
           [href]="externalUrl(p)"
-          class="mb-3 block border border-white/20 py-3 text-center font-semibold hover:border-val-teal"
+          class="mb-3 flex items-center justify-center gap-3 border border-white/20 py-3 font-semibold hover:border-val-teal"
         >
+          <app-provider-icon [provider]="p" />
           Continue with {{ p }}
         </a>
       }

@@ -1,4 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { AbstractControl, ValidationErrors } from '@angular/forms';
+
+/** Group validator: the `confirm` control must repeat `password`. A disabled `confirm` (login mode) always passes. */
+export function matchPasswords(group: AbstractControl): ValidationErrors | null {
+  const confirm = group.get('confirm');
+  return confirm?.enabled && confirm.value !== group.get('password')?.value
+    ? { mismatch: true }
+    : null;
+}
 
 /** Only same-site paths, so a crafted link can't bounce users off-site. */
 export function safeReturnUrl(url: string | undefined) {
